@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/SeeSigResource">
+        <file>RESOURCES/default_zoom.PNG</file>
+        <file>RESOURCES/1_graph_per_plot.PNG</file>
+        <file>RESOURCES/band_zoom.PNG</file>
+        <file>RESOURCES/new_plot.PNG</file>
+        <file>RESOURCES/open_plot.PNG</file>
+        <file>RESOURCES/save_plotting.PNG</file>
+        <file>RESOURCES/SeeSig_icon.png</file>
+        <file>RESOURCES/normalize.png</file>
+    </qresource>
+</RCC>
