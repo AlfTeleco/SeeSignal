@@ -50,16 +50,17 @@ DISTFILES +=
 RESOURCES += \
     SeeSigResources.qrc
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Release/release/ -lqtcsv1
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Debug/debug/ -lqtcsv1
-else:unix: LIBS += -L$$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Debug/ -lqtcsv1
 
-INCLUDEPATH += $$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Debug/debug
-DEPENDPATH += $$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Debug/debug
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/qtcsv/release/ -lqtcsv1
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/qtcsv/debug/ -lqtcsv1
+else:unix: LIBS += -L$$PWD/qtcsv/ -lqtcsv1
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Release/release/ -lqtcsv1
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Release/debug/ -lqtcsv1
-else:unix: LIBS += -L$$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Release/ -lqtcsv1
+INCLUDEPATH += $$PWD/qtcsv/debug
+DEPENDPATH += $$PWD/qtcsv/debug
 
-INCLUDEPATH += $$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Release/release
-DEPENDPATH += $$PWD/../../build-qtcsv-Desktop_Qt_5_12_7_MinGW_32_bit-Release/release
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/qtcsv/release/ -lqtcsv1
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/qtcsv/debug/ -lqtcsv1
+else:unix: LIBS += -L$$PWD/qtcsv/ -lqtcsv1
+
+INCLUDEPATH += $$PWD/qtcsv/release
+DEPENDPATH += $$PWD/qtcsv/release
