@@ -57,6 +57,16 @@ bool PlotterManager::remove_graph_from_plot( int signal_id )
                 ret = true;
             }
         }
+        QCPItemText *label;
+        for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
+        {
+            label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
+            if( label->text() == m_signal_db->get_signal_name( signal_id ) )
+            {
+                plot->removeItem( label );
+            }
+        }
+
     }
     return ret;
 }
@@ -195,13 +205,31 @@ bool PlotterManager::add_signal_at_plot( int signal_id, int plot_id )
     new_graph->addData( t_graph.first, t_graph.second);
     new_graph->setName( QString::number( signal_id ) );
     new_graph->setPen( signal->get_signal_pen() );
+
+    /*Add name and coordinates*/
+    QCPItemText *name_coordinates = new QCPItemText( plot );
+    name_coordinates->setLayer("labels");
+    name_coordinates->position->setType( QCPItemPosition::ptAbsolute );
+    name_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
+    name_coordinates->setColor( signal->get_signal_pen().color() );
+    name_coordinates->setText( signal->get_signal_name() );
+    name_coordinates->setFont( QFont( plot->font().family(), 10) );
+    name_coordinates->setSelectable( false );
+
+    QFontMetrics *fontMetrics = new QFontMetrics( name_coordinates->font() );
+    int pixels_length = fontMetrics->width( signal->get_signal_name() );
+    QPointF label_position( plot->axisRect()->topRight() );
+    label_position.setX( label_position.x() - pixels_length );
+    label_position.setY( label_position.y() + fontMetrics->height() * get_signal_indexes_from_plot( plot_id ).count() );
+    name_coordinates->position->setPixelPosition( label_position ); // move 10 pixels to the top from bracket center anchor
     return true;
 }
 
 bool PlotterManager::remove_signal_from_plot(int signal_id, int plot_id)
 {
-    QCustomPlot *plot( get_plot_given_plot_index( plot_id ) );
+    QCustomPlot *plot = get_plot_given_plot_index( plot_id );
     bool ret = false;
+
     if( plot != nullptr && is_signal_at_plot( signal_id, plot_id ) )
     {
         QCPGraph *graph;
@@ -214,6 +242,17 @@ bool PlotterManager::remove_signal_from_plot(int signal_id, int plot_id)
                 ret = true;
             }
         }
+        QCPItemText *label;
+        for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
+        {
+            label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
+            if( label->text() == m_signal_db->get_signal_name( signal_id ) )
+            {
+                plot->removeItem( label );
+            }
+        }
+
+
     }
 
     return ret;

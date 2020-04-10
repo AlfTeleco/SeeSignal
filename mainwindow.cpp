@@ -19,12 +19,12 @@ int MainWindow::create_same_tab_plot()
 {
     int new_index( -1 );
     QCustomPlot *plot = new QCustomPlot(ui->tabWidget->currentWidget());
+    plot->addLayer("labels");
     new_index = m_plotter_manager.add_plot(plot);
     plot->installEventFilter( this );
     QVBoxLayout *vertical_layout = new QVBoxLayout;
     vertical_layout->addWidget(plot);
     ui->tabWidget->currentWidget()->setLayout( vertical_layout );
-    plot->legend->setVisible( true );
     plot->setObjectName( QString::number( new_index ) );
     plot->setInteractions(QCP::iSelectPlottables | QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect );
     plot->xAxis->setLabel("X");
@@ -61,6 +61,11 @@ void MainWindow::open_file(const QString &file_name)
     {
         t_new_signals_index.append( m_signalDb->create_signal( i_new_signals.key(), i_new_signals.value() ) );
         i_new_signals++;
+    }
+
+    if( ui->tabWidget->count() < 1 )
+    {
+        create_new_tab_plot( file_name );
     }
 
     plot_id = ui->tabWidget->currentWidget()->children().first()->objectName().toInt();
@@ -207,6 +212,10 @@ void MainWindow::remove_signals_from_table( QList<int> signals_id )
 QList< int > MainWindow::get_visible_plots()
 {
     QList< int > visible_plots_indexes;
+    if( ui->tabWidget->count() < 1 )
+    {
+        return visible_plots_indexes;
+    }
     QList< QObject* > possible_plots ( ui->tabWidget->currentWidget()->children() );
     QCustomPlot *plot( nullptr );
     for( int l_var0 = 0; l_var0 < possible_plots.size(); l_var0++)
@@ -296,13 +305,19 @@ void MainWindow::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
         signal_id = item->text().toInt();
     }
 
-    int plot_id ( get_visible_plots().first() );
-    if( plot_id >= 0 && !m_plotter_manager.is_signal_at_plot( signal_id, plot_id ) )
+    int plot_id ( 0 );
+    QList<int> possible_plots ( get_visible_plots() );
+
+    if( !possible_plots.isEmpty() )
     {
-        QCustomPlot *plot( m_plotter_manager.get_plot_given_plot_index( plot_id ) );
-        m_plotter_manager.add_signal_at_plot( signal_id, plot_id );
-        plot->rescaleAxes();
-        plot->replot();
+        if( possible_plots.first() >= 0 && !m_plotter_manager.is_signal_at_plot( signal_id, possible_plots.first() ) )
+        {
+            plot_id = possible_plots.first();
+            QCustomPlot *plot( m_plotter_manager.get_plot_given_plot_index( plot_id ) );
+            m_plotter_manager.add_signal_at_plot( signal_id, plot_id );
+            plot->rescaleAxes();
+            plot->replot();
+        }
     }
 }
 
@@ -348,10 +363,6 @@ bool MainWindow::event(QEvent *event)
                 m_plotter_manager.remove_graph_from_plot( signals_indexes.at( l_var0 ) );
             }
             m_plotter_manager.get_plot_given_signal_index( signals_indexes.first() )->replot();
-            /*if( signals_indexes.size() > 0 )
-            {
-                remove_signals_from_table( signals_indexes  );
-            }*/
         }
 
     }
@@ -370,4 +381,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
         qDebug() << drop_event->source()->objectName();
     }
+}
+
+void MainWindow::on_tabWidget_tabCloseRequested(int index)
+{
+    ui->tabWidget->removeTab(index);
 }

@@ -53,6 +53,8 @@ private slots:
 
     void on_actionFile_format_triggered();
 
+    void on_tabWidget_tabCloseRequested(int index);
+
 private:
     Ui::MainWindow      *ui;
     SignalDB            *m_signalDb = SignalDB::instance();
