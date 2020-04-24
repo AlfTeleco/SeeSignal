@@ -21,12 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="SeeSigResources.qrc">
-    <normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon.png</normaloff>
-    <normalon>:/SeeSigResource/RESOURCES/SeeSig_icon.png</normalon>
-    <disabledoff>:/SeeSigResource/RESOURCES/SeeSig_icon.png</disabledoff>
-    <disabledon>:/SeeSigResource/RESOURCES/SeeSig_icon.png</disabledon>
-    <selectedoff>:/SeeSigResource/RESOURCES/SeeSig_icon.png</selectedoff>
-    <selectedon>:/SeeSigResource/RESOURCES/SeeSig_icon.png</selectedon>:/SeeSigResource/RESOURCES/SeeSig_icon.png</iconset>
+    <normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</iconset>
   </property>
   <widget class="QWidget" name="main">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,1">
@@ -245,6 +240,9 @@
    </property>
   </action>
   <action name="actionone_graph_per_plot">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normalon>:/SeeSigResource/RESOURCES/1_graph_per_plot.PNG</normalon>

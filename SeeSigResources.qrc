@@ -8,5 +8,6 @@
         <file>RESOURCES/save_plotting.PNG</file>
         <file>RESOURCES/SeeSig_icon.png</file>
         <file>RESOURCES/normalize.png</file>
+        <file>RESOURCES/SeeSig_icon_floating.png</file>
     </qresource>
 </RCC>
