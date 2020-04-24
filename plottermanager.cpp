@@ -60,13 +60,16 @@ bool PlotterManager::remove_graph_from_plot( int signal_id )
         QCPItemText *label;
         for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
         {
-            label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
-            if( label->text() == m_signal_db->get_signal_name( signal_id ) )
+            if( plot->item( l_var0 )->layer()->name() == "SignalNames" )
             {
-                plot->removeItem( label );
+                label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
+                if( label->text() == m_signal_db->get_signal_name( signal_id ) )
+                {
+                    plot->removeItem( label );
+
+                }
             }
         }
-
     }
     return ret;
 }
@@ -88,7 +91,8 @@ int PlotterManager::new_plot_index()
 int PlotterManager::add_plot(QCustomPlot *new_plot)
 {
     int new_index( new_plot_index() );
-
+    new_plot->setObjectName( QString::number( new_index ) );
+    initialize_plot( new_plot );
     m_plot_widget_2_plot_id.insert( new_index, new_plot );
 
     return new_index;
@@ -194,6 +198,32 @@ bool PlotterManager::update_data_signal_at_plot(int signal_id, QPair<QVector<dou
     return false;
 }
 
+void PlotterManager::initialize_plot(QCustomPlot *plot)
+{
+    plot->setInteractions(QCP::iSelectPlottables | QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect );
+    plot->xAxis->setLabel("X");
+    plot->yAxis->setLabel("Y");
+    plot->xAxis->setRange(-50.0, 50.0 );
+    plot->yAxis->setRange(-50.0, 50.0 );
+
+    for( int l_var0 = 0; l_var0 < m_default_plot_layers.size(); l_var0++ )
+    {
+        plot->addLayer(m_default_plot_layers.at(l_var0));
+    }
+    // add mouse cursors
+    QCPItemLine *x_line = new QCPItemLine(plot);
+    QCPItemLine *y_line = new QCPItemLine(plot);
+    x_line->setLayer("MouseCursors");
+    x_line->setSelectable(false);
+    x_line->start->setCoords(plot->xAxis->range().lower, 0);
+    x_line->end->setCoords(plot->xAxis->range().upper,0); // point to (4, 1.6) in x-y-plot coordinates
+
+    y_line->setLayer("MouseCursors");
+    y_line->setSelectable(false);
+    y_line->start->setCoords( 0, plot->yAxis->range().lower );
+    y_line->end->setCoords( 0, plot->yAxis->range().upper ); // point to (4, 1.6) in x-y-plot coordinates
+}
+
 bool PlotterManager::add_signal_at_plot( int signal_id, int plot_id )
 {
     QPair< QVector<double>, QVector<double> > t_graph;
@@ -208,7 +238,7 @@ bool PlotterManager::add_signal_at_plot( int signal_id, int plot_id )
 
     /*Add name and coordinates*/
     QCPItemText *name_coordinates = new QCPItemText( plot );
-    name_coordinates->setLayer("labels");
+    name_coordinates->setLayer("SignalNames");
     name_coordinates->position->setType( QCPItemPosition::ptAbsolute );
     name_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
     name_coordinates->setColor( signal->get_signal_pen().color() );

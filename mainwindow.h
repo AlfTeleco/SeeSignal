@@ -11,6 +11,8 @@
 #include "fileformatterdialog.h"
 
 
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -42,12 +44,10 @@ private slots:
     /* Table methods */
     void                select_signal_at_table( int signal_id );
     void                on_actionnew_plot_triggered();
-    void                on_tableWidget_itemSelectionChanged();
     void                add_signal_at_table( int signal_id );
     void                remove_signal_from_table( int signal_id );
     void                remove_signals_from_table(QList<int> signals_id);
-
-    void                on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+    void                update_mouse_cursors( QMouseEvent *event );
 
     void                on_actionnormalize_toggled(bool arg1);
 
@@ -55,6 +55,11 @@ private slots:
 
     void                on_tabWidget_tabCloseRequested(int index);
 
+    void                on_actionzoom_rect_toggled(bool arg1);
+
+    void                tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+
+    void                selection_rect_operation_finished( const QRect &  rect, QMouseEvent *  event );
 private:
     Ui::MainWindow      *ui;
     SignalDB            *m_signalDb = SignalDB::instance();
@@ -62,13 +67,18 @@ private:
     PlotterManager      m_plotter_manager;
     FileFormatterDialog *m_file_formatter;
 
+    QString             m_open_file_path;
+
     bool                event( QEvent *event);
     bool                eventFilter(QObject *watched, QEvent *event);
+
 
     QList<int>          get_visible_plots();
 
     /* Table methods */
     QList< int >        get_selected_signals_at_table();
+    QTableWidget        *get_visible_tableWidget();
 
+    void                initialize_file_formatter_dialog();
 };
 #endif // MAINWINDOW_H

@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>CSV formatting options</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="SeeSigResources.qrc">
+    <normaloff>:/SeeSigResource/RESOURCES/open_plot.PNG</normaloff>:/SeeSigResource/RESOURCES/open_plot.PNG</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -78,7 +82,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="SeeSigResources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

@@ -24,7 +24,7 @@
     <normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</iconset>
   </property>
   <widget class="QWidget" name="main">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,1">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="4">
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="acceptDrops">
@@ -39,62 +39,6 @@
       <property name="movable">
        <bool>true</bool>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QTableWidget" name="tableWidget">
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
-      <property name="cornerButtonEnabled">
-       <bool>false</bool>
-      </property>
-      <attribute name="horizontalHeaderVisible">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="horizontalHeaderCascadingSectionResizes">
-       <bool>false</bool>
-      </attribute>
-      <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>56</number>
-      </attribute>
-      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="horizontalHeaderStretchLastSection">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="verticalHeaderVisible">
-       <bool>false</bool>
-      </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>30</number>
-      </attribute>
-      <column>
-       <property name="text">
-        <string>signal_id</string>
-       </property>
-       <property name="font">
-        <font>
-         <italic>true</italic>
-        </font>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Signals</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </column>
      </widget>
     </item>
    </layout>
@@ -165,12 +109,13 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionreset_zoom"/>
-   <addaction name="actionband_zoom"/>
+   <addaction name="actionzoom_rect"/>
    <addaction name="actionnew_plot"/>
    <addaction name="actionopen_plot"/>
    <addaction name="actionsave_plot"/>
    <addaction name="actionone_graph_per_plot"/>
    <addaction name="actionnormalize"/>
+   <addaction name="actionmouse_cursors_at_signal"/>
   </widget>
   <action name="actionreset_zoom">
    <property name="icon">
@@ -182,22 +127,6 @@
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the zoom to 0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-  </action>
-  <action name="actionband_zoom">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normalon>:/SeeSigResource/RESOURCES/band_zoom.PNG</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>band_zoom</string>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Make a zoom at the mouse-specified band&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionnew_plot">
@@ -285,6 +214,36 @@
   <action name="actionOpen">
    <property name="text">
     <string>Open..</string>
+   </property>
+  </action>
+  <action name="actionmouse_cursors_at_signal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="SeeSigResources.qrc">
+     <normaloff>:/SeeSigResource/RESOURCES/mouse_cursors_at_signal.PNG</normaloff>:/SeeSigResource/RESOURCES/mouse_cursors_at_signal.PNG</iconset>
+   </property>
+   <property name="text">
+    <string>mouse_cursors_at_signal</string>
+   </property>
+   <property name="toolTip">
+    <string>Set bars at signals</string>
+   </property>
+  </action>
+  <action name="actionzoom_rect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="SeeSigResources.qrc">
+     <normaloff>:/SeeSigResource/RESOURCES/band_zoom.PNG</normaloff>:/SeeSigResource/RESOURCES/band_zoom.PNG</iconset>
+   </property>
+   <property name="text">
+    <string>zoom_rect</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom into a defined rectangle at plot</string>
    </property>
   </action>
  </widget>

@@ -7,6 +7,19 @@
 #include "signaldb.h"
 #include "qcustomplot.h"
 
+/* Layers at plots:
+ * MouseCursors
+ * MouseCoordinates
+ * SignalLabels
+ * SignalNames
+ *
+
+
+
+
+*/
+
+
 class PlotterManager : public QObject
 {
     Q_OBJECT
@@ -46,6 +59,15 @@ private:
     QMultiHash< int, int>               m_plot_id_2_signal_id;
     SignalDB                            *m_signal_db = SignalDB::instance();
     QList< int >                        m_plot_indexes;
+
+    QStringList                         m_default_plot_layers =
+                                        { "MouseCursors",
+                                          "MouseCoordinates",
+                                          "SignalLabels",
+                                          "SignalNames"
+                                        };
+
+    void                                initialize_plot( QCustomPlot *plot );
 
 public slots:
     bool            remove_graph_from_plot( int signal_id );

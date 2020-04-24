@@ -9,5 +9,8 @@
         <file>RESOURCES/SeeSig_icon.png</file>
         <file>RESOURCES/normalize.png</file>
         <file>RESOURCES/SeeSig_icon_floating.png</file>
+        <file>RESOURCES/mouse_cursors.PNG</file>
+        <file>RESOURCES/SeeSig_icon_floating.ico</file>
+        <file>RESOURCES/mouse_cursors_at_signal.PNG</file>
     </qresource>
 </RCC>

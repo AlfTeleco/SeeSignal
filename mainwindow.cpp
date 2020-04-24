@@ -8,12 +8,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true);
     create_new_tab_plot(QString::number(ui->tabWidget->count()));
-    m_file_formatter = new FileFormatterDialog();
+    initialize_file_formatter_dialog();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::initialize_file_formatter_dialog()
+{
+    m_file_formatter = new FileFormatterDialog();
 }
 
 int MainWindow::create_same_tab_plot()
@@ -23,14 +28,27 @@ int MainWindow::create_same_tab_plot()
     plot->addLayer("labels");
     new_index = m_plotter_manager.add_plot(plot);
     plot->installEventFilter( this );
-    QVBoxLayout *vertical_layout = new QVBoxLayout;
-    vertical_layout->addWidget(plot);
-    ui->tabWidget->currentWidget()->setLayout( vertical_layout );
-    plot->setObjectName( QString::number( new_index ) );
-    plot->setInteractions(QCP::iSelectPlottables | QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect );
-    plot->xAxis->setLabel("X");
-    plot->yAxis->setLabel("Y");
-    connect(plot, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+
+    QTableWidget *table_widget = new QTableWidget( ui->tabWidget->currentWidget() );
+    table_widget->setColumnCount(2);
+    QTableWidgetItem *signal_index_item = new QTableWidgetItem(tr("Index"));
+    QTableWidgetItem *signal_name_item  = new QTableWidgetItem(tr("Name"));
+    table_widget->setHorizontalHeaderItem( 0, signal_index_item);
+    table_widget->setHorizontalHeaderItem( 1, signal_name_item);
+    table_widget->verticalHeader()->setVisible(false);
+    table_widget->horizontalHeader()->setStretchLastSection(true);
+    table_widget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table_widget->setSortingEnabled(true);
+
+    QHBoxLayout *horizontal_layout = new QHBoxLayout;
+    horizontal_layout->addWidget(plot);
+    horizontal_layout->addWidget(table_widget);
+    ui->tabWidget->currentWidget()->setLayout( horizontal_layout );
+    horizontal_layout->setStretch(0,8);
+    horizontal_layout->setStretch(1,2);
+    connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
+    connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+    connect( plot->selectionRect(), SIGNAL( accepted( const QRect & , QMouseEvent * )), this, SLOT(selection_rect_operation_finished( const QRect & , QMouseEvent *) ) );
     return new_index;
 }
 
@@ -116,7 +134,8 @@ void MainWindow::open_files(QStringList files_names)
 void MainWindow::on_actionopen_plot_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open signal"), "F:/Trabajo/CAF/DDP_SW_AT/PROYECTOS/BUGS/NEWCASTLE_Fogueado", tr("Signal Files (*.csv *.txt *.dat)"));
+        tr("Open signal"), m_open_file_path, tr("Signal Files (*.csv *.txt *.dat)"));
+    m_open_file_path = fileName;
     open_file( fileName );
 }
 
@@ -139,12 +158,12 @@ void MainWindow::select_signal_at_table(int signal_id)
         return;
     }
 
-    for( int l_var0 = 0; l_var0 < ui->tableWidget->rowCount(); l_var0++ )
+    for( int l_var0 = 0; l_var0 < get_visible_tableWidget()->rowCount(); l_var0++ )
     {
-        if( signal_id == ui->tableWidget->item( l_var0, 0 )->text().toInt() )
+        if( signal_id == get_visible_tableWidget()->item( l_var0, 0 )->text().toInt() )
         {
-            ui->tableWidget->item( l_var0, 0 )->setSelected( true );
-            ui->tableWidget->item( l_var0, 1 )->setSelected( true );
+            get_visible_tableWidget()->item( l_var0, 0 )->setSelected( true );
+            get_visible_tableWidget()->item( l_var0, 1 )->setSelected( true );
         }
     }
 }
@@ -165,11 +184,11 @@ void MainWindow::remove_signal_from_table(int signal_id)
     {
         return;
     }
-    for( int l_var0 = 0; l_var0 < ui->tableWidget->rowCount(); l_var0++ )
+    for( int l_var0 = 0; l_var0 < get_visible_tableWidget()->rowCount(); l_var0++ )
     {
-        if( signal_id == ui->tableWidget->item( l_var0, 0 )->text().toInt() )
+        if( signal_id == get_visible_tableWidget()->item( l_var0, 0 )->text().toInt() )
         {
-            ui->tableWidget->removeRow( l_var0 );
+            get_visible_tableWidget()->removeRow( l_var0 );
         }
     }
 
@@ -190,16 +209,16 @@ void MainWindow::remove_signals_from_table( QList<int> signals_id )
     int t_table_index;
 
     START:
-    for( int l_var0 = 0; l_var0 < ui->tableWidget->rowCount(); l_var0++ )
+    for( int l_var0 = 0; l_var0 < get_visible_tableWidget()->rowCount(); l_var0++ )
     {
-        t_table_index = ui->tableWidget->item( l_var0, 0 )->text().toInt();
+        t_table_index = get_visible_tableWidget()->item( l_var0, 0 )->text().toInt();
 
         for( int l_var1 = 0; l_var1 < signals_id.size(); l_var1++ )
         {
             if( signals_id.at(l_var1) == t_table_index )
             {
                 t_index = l_var1;
-                ui->tableWidget->removeRow(l_var0);
+                get_visible_tableWidget()->removeRow(l_var0);
                 signals_id.removeAt( t_index );
                 goto START;
             }
@@ -208,6 +227,11 @@ void MainWindow::remove_signals_from_table( QList<int> signals_id )
 
     qDebug() << "1 por 1 ha tardado: " << timer.nsecsElapsed() << " ns";
 
+}
+
+void MainWindow::update_mouse_cursors(QMouseEvent *event)
+{
+    qDebug() << "El mouse está en el plot";
 }
 
 QList< int > MainWindow::get_visible_plots()
@@ -238,7 +262,7 @@ void MainWindow::on_actionnew_plot_triggered()
 QList<int> MainWindow::get_selected_signals_at_table()
 {
     QList< int >  signals_id;
-    QList< QTableWidgetItem* > selected_items( ui->tableWidget->selectedItems() );
+    QList< QTableWidgetItem* > selected_items( get_visible_tableWidget()->selectedItems() );
     QTableWidgetItem *item(nullptr);
 
     for( int l_var0 = 0; l_var0 < selected_items.size(); l_var0++)
@@ -252,23 +276,24 @@ QList<int> MainWindow::get_selected_signals_at_table()
     return signals_id;
 }
 
-void MainWindow::on_tableWidget_itemSelectionChanged()
+QTableWidget *MainWindow::get_visible_tableWidget()
 {
-    QList< int >  signals_id;
-    QList< QTableWidgetItem* > selected_items( ui->tableWidget->selectedItems() );
-    QTableWidgetItem *item(nullptr);
-
-    for( int l_var0 = 0; l_var0 < selected_items.size(); l_var0++)
+    QTableWidget *ret_visible_table( nullptr );
+    if( ui->tabWidget->count() < 1 )
     {
-        item = selected_items.at( l_var0 );
-        if( item->column() == 0 )
+        return ret_visible_table;
+    }
+    QList< QObject* > possible_table ( ui->tabWidget->currentWidget()->children() );
+
+    for( int l_var0 = 0; l_var0 < possible_table.size(); l_var0++)
+    {
+        ret_visible_table = dynamic_cast<QTableWidget*>( possible_table.at( l_var0 ) );
+        if( ret_visible_table != nullptr )
         {
-            signals_id.append( item->text().toInt() );
+            return ret_visible_table;
         }
     }
-
-    m_plotter_manager.set_selected_graphs( signals_id, true );
-
+    return ret_visible_table;
 }
 
 void MainWindow::add_signal_at_table(int signal_id)
@@ -281,25 +306,25 @@ void MainWindow::add_signal_at_table(int signal_id)
     QTableWidgetItem *new_item_signal_name = new QTableWidgetItem(m_signalDb->get_signal_name( signal_id ));
     new_item_signal_id->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
     new_item_signal_name->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
-    ui->tableWidget->insertRow( ui->tableWidget->rowCount() );
-    ui->tableWidget->setItem( ui->tableWidget->rowCount() - 1, 0, new_item_signal_id);
-    ui->tableWidget->setItem( ui->tableWidget->rowCount() - 1, 1, new_item_signal_name);
+    get_visible_tableWidget()->insertRow( get_visible_tableWidget()->rowCount() );
+    get_visible_tableWidget()->setItem( get_visible_tableWidget()->rowCount() - 1, 0, new_item_signal_id);
+    get_visible_tableWidget()->setItem( get_visible_tableWidget()->rowCount() - 1, 1, new_item_signal_name);
 
     QCustomPlot *plot = m_plotter_manager.get_plot_given_signal_index( signal_id );
     QCPGraph *graph(nullptr);
     QPen t_pen( m_signalDb->get_signal_pen( signal_id ) );
 
-    ui->tableWidget->item( ui->tableWidget->rowCount() -1, 0 )->setBackgroundColor( t_pen.color() );
+    get_visible_tableWidget()->item( get_visible_tableWidget()->rowCount() -1, 0 )->setBackgroundColor( t_pen.color() );
 
 }
 
 
-void MainWindow::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *item)
 {
     int signal_id;
     if( item->column() == 1 )
     {
-        signal_id =  ui->tableWidget->item( item->row(), 0 )->text().toInt();
+        signal_id =  get_visible_tableWidget()->item( item->row(), 0 )->text().toInt();
     }
     else
     {
@@ -320,6 +345,11 @@ void MainWindow::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
             plot->replot();
         }
     }
+}
+
+void MainWindow::selection_rect_operation_finished(const QRect &rect, QMouseEvent *event)
+{
+    ui->actionzoom_rect->setChecked(false);
 }
 
 void MainWindow::on_actionnormalize_toggled(bool arg1)
@@ -362,12 +392,8 @@ bool MainWindow::event(QEvent *event)
             {
                 m_plotter_manager.remove_graph_from_plot( signals_indexes.at( l_var0 ) );
             }
-            m_plotter_manager.get_plot_given_signal_index( signals_indexes.first() )->replot();
+            m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() )->replot();
         }
-
-    }
-    else if( event->type() == QEvent::MouseButtonPress &&  ui->actionband_zoom->isChecked() )
-    {
 
     }
     return QWidget::event(event);
@@ -381,9 +407,17 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
         qDebug() << drop_event->source()->objectName();
     }
+
+    return false;
 }
 
 void MainWindow::on_tabWidget_tabCloseRequested(int index)
 {
     ui->tabWidget->removeTab(index);
+}
+
+void MainWindow::on_actionzoom_rect_toggled(bool arg1)
+{
+    QCustomPlot *plot = m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() );
+    arg1 ? plot->setSelectionRectMode(QCP::srmZoom) : plot->setSelectionRectMode(QCP::srmNone);
 }
