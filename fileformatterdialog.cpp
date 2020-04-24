@@ -21,7 +21,6 @@ void FileFormatterDialog::on_buttonBox_clicked(QAbstractButton *button)
     if( button->text() == "Save")
     {
         m_csv_separator = ui->csv_separator_lineedit->text();
-
         m_max_columns = ui->max_columns_lineedit->text().toInt();
     }
 }

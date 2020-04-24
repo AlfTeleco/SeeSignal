@@ -49,20 +49,18 @@ private slots:
 
     void                on_tableWidget_itemDoubleClicked(QTableWidgetItem *item);
 
-    void on_actionnormalize_toggled(bool arg1);
+    void                on_actionnormalize_toggled(bool arg1);
 
-    void on_actionFile_format_triggered();
+    void                on_actionFile_format_triggered();
 
-    void on_tabWidget_tabCloseRequested(int index);
+    void                on_tabWidget_tabCloseRequested(int index);
 
 private:
     Ui::MainWindow      *ui;
     SignalDB            *m_signalDb = SignalDB::instance();
     FileParser          m_file_parser;
     PlotterManager      m_plotter_manager;
-
-    QString             m_csv_separator = ";";
-    int                 m_max_columns= 9999;
+    FileFormatterDialog *m_file_formatter;
 
     bool                event( QEvent *event);
     bool                eventFilter(QObject *watched, QEvent *event);

@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true);
     create_new_tab_plot(QString::number(ui->tabWidget->count()));
+    m_file_formatter = new FileFormatterDialog();
 }
 
 MainWindow::~MainWindow()
@@ -52,7 +53,7 @@ void MainWindow::open_file(const QString &file_name)
         return;
     }
 
-    QHash< QString, QPolygonF > t_new_signals( m_file_parser.open_csv_signal_file(file_name, m_csv_separator) );
+    QHash< QString, QPolygonF > t_new_signals( m_file_parser.open_csv_signal_file(file_name, m_file_formatter->get_csv_separator()) );
     QHash< QString, QPolygonF >::iterator i_new_signals = t_new_signals.begin();
     QVector< int > t_new_signals_index;
     int plot_id(0);
@@ -337,8 +338,7 @@ void MainWindow::on_actionnormalize_toggled(bool arg1)
 
 void MainWindow::on_actionFile_format_triggered()
 {
-    FileFormatterDialog *fileFormatter = new FileFormatterDialog();
-    fileFormatter->show();
+    m_file_formatter->show();
 }
 
 

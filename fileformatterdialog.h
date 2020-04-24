@@ -16,8 +16,8 @@ public:
     explicit FileFormatterDialog(QWidget *parent = nullptr);
     ~FileFormatterDialog();
 
-    inline QString get_csv_separator() const { return m_csv_separator; }
-    inline int get_max_columns()   const { return m_max_columns; }
+    inline QString          get_csv_separator() const { return m_csv_separator; }
+    inline int              get_max_columns()   const { return m_max_columns; }
 
 private slots:
 
