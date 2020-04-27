@@ -48,7 +48,7 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(1,2);
     connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
     connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
-    connect( plot->selectionRect(), SIGNAL( accepted( const QRect & , QMouseEvent * )), this, SLOT(selection_rect_operation_finished( const QRect & , QMouseEvent *) ) );
+
     return new_index;
 }
 
@@ -347,11 +347,6 @@ void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *item)
     }
 }
 
-void MainWindow::selection_rect_operation_finished(const QRect &rect, QMouseEvent *event)
-{
-    ui->actionzoom_rect->setChecked(false);
-}
-
 void MainWindow::on_actionnormalize_toggled(bool arg1)
 {
     if ( arg1 )
@@ -418,6 +413,5 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index)
 
 void MainWindow::on_actionzoom_rect_toggled(bool arg1)
 {
-    QCustomPlot *plot = m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() );
-    arg1 ? plot->setSelectionRectMode(QCP::srmZoom) : plot->setSelectionRectMode(QCP::srmNone);
+    m_plotter_manager.update_common_plot_properties( rect_zoom, arg1 );
 }

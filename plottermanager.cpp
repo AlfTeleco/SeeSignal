@@ -198,6 +198,25 @@ bool PlotterManager::update_data_signal_at_plot(int signal_id, QPair<QVector<dou
     return false;
 }
 
+void PlotterManager::update_common_plot_properties(const PlotProperties &plot_property, bool enabled)
+{
+    QCustomPlot *plot( nullptr );
+    for( int l_var0 = 0; l_var0 < m_plot_indexes.size(); l_var0++ )
+    {
+        plot = get_plot_given_plot_index( m_plot_indexes.at( l_var0 ) );
+        switch ( plot_property )
+        {
+            case rect_zoom:
+                enabled ? plot->setSelectionRectMode(QCP::srmZoom) : plot->setSelectionRectMode(QCP::srmNone);
+            break;
+            case normalized:
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 void PlotterManager::initialize_plot(QCustomPlot *plot)
 {
     plot->setInteractions(QCP::iSelectPlottables | QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect );

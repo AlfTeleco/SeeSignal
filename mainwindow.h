@@ -59,7 +59,6 @@ private slots:
 
     void                tableWidget_itemDoubleClicked(QTableWidgetItem *item);
 
-    void                selection_rect_operation_finished( const QRect &  rect, QMouseEvent *  event );
 private:
     Ui::MainWindow      *ui;
     SignalDB            *m_signalDb = SignalDB::instance();

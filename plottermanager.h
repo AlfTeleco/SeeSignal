@@ -20,6 +20,10 @@
 */
 
 
+enum PlotProperties {   rect_zoom     = 0 // selection rect mode
+                        ,normalized   = 1 // normalization on plot
+                    };
+
 class PlotterManager : public QObject
 {
     Q_OBJECT
@@ -48,6 +52,7 @@ public:
     QPair<QVector<double>, QVector<double> > get_data_for_customPlot_normalized(int signal_id );
     int              get_maximum_from_vector( QVector< double > values );
     bool             update_data_signal_at_plot( int signal_id, QPair<QVector<double>, QVector<double> > data);
+    void             update_common_plot_properties( const PlotProperties &plot_property, bool enabled );
 
 private:
 
