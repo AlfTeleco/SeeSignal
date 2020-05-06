@@ -49,8 +49,6 @@ private slots:
     void                remove_signals_from_table(QList<int> signals_id);
     void                update_mouse_cursors( QMouseEvent *event );
 
-    void                on_actionnormalize_toggled(bool arg1);
-
     void                on_actionFile_format_triggered();
 
     void                on_tabWidget_tabCloseRequested(int index);
@@ -58,6 +56,10 @@ private slots:
     void                on_actionzoom_rect_toggled(bool arg1);
 
     void                tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+
+    void                on_actionnormalize_triggered();
+
+    void                on_actionmouse_cursors_at_signal_toggled(bool arg1);
 
 private:
     Ui::MainWindow      *ui;

@@ -185,9 +185,6 @@
    </property>
   </action>
   <action name="actionnormalize">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="SeeSigResources.qrc">
      <normaloff>:/SeeSigResource/RESOURCES/normalize.png</normaloff>

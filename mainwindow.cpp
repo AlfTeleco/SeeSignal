@@ -129,6 +129,10 @@ void MainWindow::open_files(QStringList files_names)
     {
         return;
     }
+    for ( int l_var0 = files_names.size() - 1; l_var0 > 0; l_var0-- )
+    {
+        open_file( files_names.at( l_var0 ) );
+    }
 }
 
 void MainWindow::on_actionopen_plot_triggered()
@@ -231,7 +235,28 @@ void MainWindow::remove_signals_from_table( QList<int> signals_id )
 
 void MainWindow::update_mouse_cursors(QMouseEvent *event)
 {
-    qDebug() << "El mouse está en el plot";
+    if( get_visible_plots().isEmpty() )
+        return;
+
+    QCustomPlot *plot = m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() );
+    if( !plot->axisRect()->rect().contains( event->pos().x(), event->pos().y() ) )
+        return;
+
+    QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
+
+    QCPItemStraightLine *t_lineX = dynamic_cast < QCPItemStraightLine* > ( plot->layer( "MouseCursors" )->children().at( 0 ) );
+    QCPItemStraightLine *t_lineY = dynamic_cast < QCPItemStraightLine* > ( plot->layer( "MouseCursors" )->children().at( 1 ) );
+    QPointF xlineStart( plot->xAxis->range().lower, mousePosition.y() );
+    QPointF xlineEnd( plot->xAxis->range().upper, mousePosition.y() );
+    QPointF ylineStart( mousePosition.x(), plot->yAxis->range().lower );
+    QPointF ylineEnd( mousePosition.x(),  plot->yAxis->range().upper );
+
+    t_lineX->position("point1")->setCoords( xlineStart );
+    t_lineX->position("point2")->setCoords( xlineEnd );
+    t_lineY->position("point1")->setCoords( ylineStart );
+    t_lineY->position("point2")->setCoords( ylineEnd );
+    plot->replot();
+
 }
 
 QList< int > MainWindow::get_visible_plots()
@@ -347,20 +372,6 @@ void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *item)
     }
 }
 
-void MainWindow::on_actionnormalize_toggled(bool arg1)
-{
-    if ( arg1 )
-    {
-        QList< int > t_indexes(m_plotter_manager.get_signal_indexes_from_plot( get_visible_plots().first() ) );
-        for( int l_var0 = 0; l_var0 < t_indexes.size(); l_var0++ )
-        {
-            m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0), m_plotter_manager.get_data_for_customPlot_normalized( t_indexes.at(l_var0) ) );
-        }
-        m_plotter_manager.get_plot_given_signal_index( t_indexes.first() )->replot();
-
-    }
-}
-
 void MainWindow::on_actionFile_format_triggered()
 {
     m_file_formatter->show();
@@ -374,6 +385,19 @@ bool MainWindow::event(QEvent *event)
     {
         QDragEnterEvent *drag_event( dynamic_cast<QDragEnterEvent*>(event));
         drag_event->setAccepted(true);
+    }
+    else if( event->type() == QEvent::Drop )
+    {
+        QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
+        const QMimeData *t_data = drop_event->mimeData();
+        if( t_data->hasUrls() )
+        {
+            QListIterator<QUrl> t_iterator(t_data->urls());
+            while( t_iterator.hasNext() )
+            {
+                open_file( t_iterator.next().toLocalFile() );
+            }
+        }
     }
     else if ( event->type() == QEvent::KeyPress && dynamic_cast<QKeyEvent*>(event)->key() == Qt::Key_Delete )
     {
@@ -397,10 +421,26 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
-    if( event->type() == QEvent::Drop )
+    switch(event->type())
     {
-        QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
-        qDebug() << drop_event->source()->objectName();
+        case QMouseEvent::MouseMove:
+        {
+            if( ui->actionmouse_cursors_at_signal->isChecked() )
+            {
+                update_mouse_cursors( dynamic_cast<QMouseEvent*>(event) );
+            }
+        }
+        break;
+
+        case QEvent::Drop:
+        {
+            QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
+            qDebug() << drop_event->source()->objectName();
+        }
+        break;
+
+        default:
+        break;
     }
 
     return false;
@@ -414,4 +454,25 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index)
 void MainWindow::on_actionzoom_rect_toggled(bool arg1)
 {
     m_plotter_manager.update_common_plot_properties( rect_zoom, arg1 );
+}
+
+void MainWindow::on_actionnormalize_triggered()
+{
+    if ( !get_visible_plots().isEmpty() )
+    {
+        QList< int > t_indexes(m_plotter_manager.get_signal_indexes_from_plot( get_visible_plots().first() ) );
+        for( int l_var0 = 0; l_var0 < t_indexes.size(); l_var0++ )
+        {
+            m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0), m_plotter_manager.get_data_for_customPlot_normalized( t_indexes.at(l_var0) ) );
+        }
+        if( !t_indexes.isEmpty() )
+        {
+            m_plotter_manager.get_plot_given_signal_index( t_indexes.first() )->replot();
+        }
+    }
+}
+
+void MainWindow::on_actionmouse_cursors_at_signal_toggled(bool arg1)
+{
+    m_plotter_manager.update_common_plot_properties( PlotProperties::mouse_cursors, arg1  );
 }

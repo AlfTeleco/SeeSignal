@@ -57,19 +57,21 @@ bool PlotterManager::remove_graph_from_plot( int signal_id )
                 ret = true;
             }
         }
-        QCPItemText *label;
-        for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
-        {
-            if( plot->item( l_var0 )->layer()->name() == "SignalNames" )
-            {
-                label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
-                if( label->text() == m_signal_db->get_signal_name( signal_id ) )
-                {
-                    plot->removeItem( label );
 
-                }
-            }
-        }
+        update_signal_names( plot_id );
+//        QCPItemText *label;
+//        for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
+//        {
+//            if( plot->item( l_var0 )->layer()->name() == "SignalNames" )
+//            {
+//                label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
+//                if( label->text() == m_signal_db->get_signal_name( signal_id ) )
+//                {
+//                    plot->removeItem( label );
+
+//                }
+//            }
+//        }
     }
     return ret;
 }
@@ -79,6 +81,62 @@ bool PlotterManager::remove_signal_from_dbs(int signal_id)
     while( m_plot_id_2_signal_id.find(signal_id) != m_plot_id_2_signal_id.end() )
     {
         m_plot_id_2_signal_id.remove(signal_id);
+    }
+}
+
+void PlotterManager::update_signal_names( int plot_id )
+{
+
+    QCustomPlot *plot = get_plot_given_plot_index( plot_id );
+
+    // First delete all names
+    QList<QCPItemText*> name_coordinates_list;
+    for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
+    {
+        if( plot->item( l_var0 )->layer()->name() == "SignalNames" )
+        {
+            name_coordinates_list.append( dynamic_cast< QCPItemText*>( plot->item( l_var0 ) ) );
+        }
+    }
+
+    QListIterator< QCPItemText* > t_list_iterator( name_coordinates_list );
+    while( t_list_iterator.hasNext() )
+    {
+        plot->removeItem( t_list_iterator.next() );
+    }
+
+    // get info to print signals: names and colours
+    QListIterator<int> t_signal_indexes( get_signal_indexes_from_plot(plot_id) );
+    QList< const SignalItem* > t_signals;
+    while( t_signal_indexes.hasNext() )
+    {
+        t_signals.append( m_signal_db->get_signal( t_signal_indexes.next() ) );
+    }
+
+    // Print them on the upperright corner of the plot
+    QCPItemText *name_coordinates ( nullptr );
+    QFontMetrics *fontMetrics = nullptr;
+    int pixels_length = 0;
+    QPointF label_position;
+    QListIterator< const SignalItem*> t_signal_iterator( t_signals );
+    const SignalItem *t_signal;
+    while( t_signal_iterator.hasNext() )
+    {
+        t_signal = t_signal_iterator.next();
+        name_coordinates = new QCPItemText( plot );
+        name_coordinates->setLayer("SignalNames");
+        name_coordinates->position->setType( QCPItemPosition::ptAbsolute );
+        name_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
+        name_coordinates->setText( t_signal->get_signal_name() );
+        name_coordinates->setFont( QFont( plot->font().family(), 10) );
+        name_coordinates->setSelectable( false );
+        name_coordinates->setColor( t_signal->get_signal_pen().color() );
+        fontMetrics = new QFontMetrics( name_coordinates->font() );
+        pixels_length = fontMetrics->width( t_signal->get_signal_name() );
+        label_position = plot->axisRect()->topRight();
+        label_position.setX( label_position.x() - pixels_length );
+        label_position.setY( label_position.y() + fontMetrics->height() * ( t_signals.indexOf( t_signal ) + 1 ) );
+        name_coordinates->position->setPixelPosition( label_position ); // move 10 pixels to the top from bracket center anchor
     }
 }
 
@@ -211,6 +269,9 @@ void PlotterManager::update_common_plot_properties(const PlotProperties &plot_pr
             break;
             case normalized:
                 break;
+            case mouse_cursors:
+                plot->layer("MouseCursors")->setVisible(enabled);
+            break;
             default:
                 break;
         }
@@ -230,17 +291,16 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
         plot->addLayer(m_default_plot_layers.at(l_var0));
     }
     // add mouse cursors
-    QCPItemLine *x_line = new QCPItemLine(plot);
-    QCPItemLine *y_line = new QCPItemLine(plot);
+    QCPItemStraightLine *x_line = new QCPItemStraightLine(plot);
+    QCPItemStraightLine *y_line = new QCPItemStraightLine(plot);
     x_line->setLayer("MouseCursors");
+    x_line->setObjectName("line_x");
     x_line->setSelectable(false);
-    x_line->start->setCoords(plot->xAxis->range().lower, 0);
-    x_line->end->setCoords(plot->xAxis->range().upper,0); // point to (4, 1.6) in x-y-plot coordinates
 
     y_line->setLayer("MouseCursors");
+    y_line->setObjectName("line_y");
     y_line->setSelectable(false);
-    y_line->start->setCoords( 0, plot->yAxis->range().lower );
-    y_line->end->setCoords( 0, plot->yAxis->range().upper ); // point to (4, 1.6) in x-y-plot coordinates
+
 }
 
 bool PlotterManager::add_signal_at_plot( int signal_id, int plot_id )

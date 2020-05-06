@@ -21,7 +21,8 @@
 
 
 enum PlotProperties {   rect_zoom     = 0 // selection rect mode
-                        ,normalized   = 1 // normalization on plot
+                        ,normalized // normalization on plot
+                        ,mouse_cursors // normalization on plot
                     };
 
 class PlotterManager : public QObject
@@ -77,6 +78,8 @@ private:
 public slots:
     bool            remove_graph_from_plot( int signal_id );
     bool            remove_signal_from_dbs( int signal_id );
+    void            update_signal_names( int plot_id );
+
 
 signals:
 
