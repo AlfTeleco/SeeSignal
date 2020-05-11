@@ -28,8 +28,10 @@ int MainWindow::create_same_tab_plot()
     plot->addLayer("labels");
     new_index = m_plotter_manager.add_plot(plot);
     plot->installEventFilter( this );
+    ui->tabWidget->currentWidget()->installEventFilter( this );
 
     QTableWidget *table_widget = new QTableWidget( ui->tabWidget->currentWidget() );
+    table_widget->installEventFilter( this );
     table_widget->setColumnCount(2);
     QTableWidgetItem *signal_index_item = new QTableWidgetItem(tr("Index"));
     QTableWidgetItem *signal_name_item  = new QTableWidgetItem(tr("Name"));
@@ -46,7 +48,8 @@ int MainWindow::create_same_tab_plot()
     ui->tabWidget->currentWidget()->setLayout( horizontal_layout );
     horizontal_layout->setStretch(0,8);
     horizontal_layout->setStretch(1,2);
-    connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
+
+    //connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
     connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
@@ -344,18 +347,8 @@ void MainWindow::add_signal_at_table(int signal_id)
 }
 
 
-void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+void MainWindow::tableWidget_itemDoubleClicked(int signal_id)
 {
-    int signal_id;
-    if( item->column() == 1 )
-    {
-        signal_id =  get_visible_tableWidget()->item( item->row(), 0 )->text().toInt();
-    }
-    else
-    {
-        signal_id = item->text().toInt();
-    }
-
     int plot_id ( 0 );
     QList<int> possible_plots ( get_visible_plots() );
 
@@ -366,6 +359,24 @@ void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *item)
             plot_id = possible_plots.first();
             QCustomPlot *plot( m_plotter_manager.get_plot_given_plot_index( plot_id ) );
             m_plotter_manager.add_signal_at_plot( signal_id, plot_id );
+            plot->rescaleAxes();
+            plot->replot();
+        }
+    }
+}
+
+void MainWindow::set_signal_as_x_axis_values(int signal_id)
+{
+    int plot_id ( 0 );
+    QList<int> possible_plots ( get_visible_plots() );
+
+    if( !possible_plots.isEmpty() )
+    {
+        if( possible_plots.first() >= 0 && !m_plotter_manager.is_signal_at_plot( signal_id, possible_plots.first() ) )
+        {
+            plot_id = possible_plots.first();
+            QCustomPlot *plot( m_plotter_manager.get_plot_given_plot_index( plot_id ) );
+
             plot->rescaleAxes();
             plot->replot();
         }
@@ -439,6 +450,32 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
         break;
 
+    case QEvent::MouseButtonDblClick:
+        {
+            qDebug() << "Dblclk";
+            QTableWidget *t_table_widget( get_visible_tableWidget() );
+            if( watched == t_table_widget )
+            {
+                QMouseEvent *t_mouse_event = dynamic_cast<QMouseEvent*>( event );
+                QPoint t_point = t_table_widget->mapFromGlobal( t_mouse_event->pos() );
+                QTableWidgetItem *t_item = t_table_widget->itemAt( t_point );
+                int signal_id;
+                qDebug() << t_item->column();
+                if( t_item->column() == 1 )
+                {
+                    signal_id =  t_table_widget->item( t_item->row(), 0 )->text().toInt();
+                }
+                if( t_mouse_event->buttons() == Qt::LeftButton )
+                {
+                    tableWidget_itemDoubleClicked( signal_id );
+                }
+                else if( t_mouse_event->buttons() == Qt::RightButton )
+                {
+                    set_signal_as_x_axis_values( signal_id );
+                }
+            }
+        }
+        break;
         default:
         break;
     }

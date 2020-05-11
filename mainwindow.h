@@ -55,7 +55,9 @@ private slots:
 
     void                on_actionzoom_rect_toggled(bool arg1);
 
-    void                tableWidget_itemDoubleClicked(QTableWidgetItem *item);
+    void                tableWidget_itemDoubleClicked(int signal_id);
+
+    void                set_signal_as_x_axis_values( int signal_id );
 
     void                on_actionnormalize_triggered();
 
