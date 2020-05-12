@@ -67,6 +67,16 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QCheckBox" name="time_values_x_values">
+        <property name="text">
+         <string>Consider &quot;Time values&quot; as X axis values</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

@@ -54,7 +54,7 @@ public:
     int              get_maximum_from_vector( QVector< double > values );
     bool             update_data_signal_at_plot( int signal_id, QPair<QVector<double>, QVector<double> > data);
     void             update_common_plot_properties( const PlotProperties &plot_property, bool enabled );
-
+    void             replot_all();
 private:
 
     /* For each signal will be an element at the multihash. As each signal can be drawn at several plots simultaneusly there can be several elements with the same signal_id.
@@ -76,6 +76,7 @@ private:
     void                                initialize_plot( QCustomPlot *plot );
 
 public slots:
+
     bool            remove_graph_from_plot( int signal_id );
     bool            remove_signal_from_dbs( int signal_id );
     void            update_signal_names( int plot_id );

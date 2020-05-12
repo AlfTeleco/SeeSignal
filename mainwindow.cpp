@@ -7,7 +7,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setAcceptDrops(true);
-    create_new_tab_plot(QString::number(ui->tabWidget->count()));
     initialize_file_formatter_dialog();
 }
 
@@ -31,7 +30,7 @@ int MainWindow::create_same_tab_plot()
     ui->tabWidget->currentWidget()->installEventFilter( this );
 
     QTableWidget *table_widget = new QTableWidget( ui->tabWidget->currentWidget() );
-    table_widget->installEventFilter( this );
+    //table_widget->installEventFilter( this );
     table_widget->setColumnCount(2);
     QTableWidgetItem *signal_index_item = new QTableWidgetItem(tr("Index"));
     QTableWidgetItem *signal_name_item  = new QTableWidgetItem(tr("Name"));
@@ -49,7 +48,7 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(0,8);
     horizontal_layout->setStretch(1,2);
 
-    //connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
+    connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
     connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
@@ -85,10 +84,7 @@ void MainWindow::open_file(const QString &file_name)
         i_new_signals++;
     }
 
-    if( ui->tabWidget->count() < 1 )
-    {
-        create_new_tab_plot( file_name );
-    }
+    create_new_tab_plot( file_name );
 
     plot_id = ui->tabWidget->currentWidget()->children().first()->objectName().toInt();
 
@@ -243,7 +239,14 @@ void MainWindow::update_mouse_cursors(QMouseEvent *event)
 
     QCustomPlot *plot = m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() );
     if( !plot->axisRect()->rect().contains( event->pos().x(), event->pos().y() ) )
+    {
+        plot->layer("MouseCursors")->setVisible(false);
+        plot->replot();
         return;
+    }else if( !plot->layer("MouseCursors")->visible() )
+    {
+         plot->layer("MouseCursors")->setVisible(true);
+    }
 
     QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
 
@@ -388,6 +391,51 @@ void MainWindow::on_actionFile_format_triggered()
     m_file_formatter->show();
 }
 
+void MainWindow::on_tabWidget_tabCloseRequested(int index)
+{
+    ui->tabWidget->removeTab(index);
+}
+
+void MainWindow::on_actionzoom_rect_toggled(bool arg1)
+{
+    m_plotter_manager.update_common_plot_properties( rect_zoom, arg1 );
+}
+
+void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *t_item)
+{
+    QTableWidget *t_table_widget( get_visible_tableWidget() );
+    if( t_table_widget == nullptr )
+    {
+        return;
+    }
+    int signal_id = 0;
+    if( t_item->column() == 1 )
+    {
+        signal_id =  t_table_widget->item( t_item->row(), 0 )->text().toInt();
+        tableWidget_itemDoubleClicked( signal_id );
+    }
+}
+
+void MainWindow::on_actionnormalize_triggered()
+{
+    if ( !get_visible_plots().isEmpty() )
+    {
+        QList< int > t_indexes(m_plotter_manager.get_signal_indexes_from_plot( get_visible_plots().first() ) );
+        for( int l_var0 = 0; l_var0 < t_indexes.size(); l_var0++ )
+        {
+            m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0), m_plotter_manager.get_data_for_customPlot_normalized( t_indexes.at(l_var0) ) );
+        }
+        if( !t_indexes.isEmpty() )
+        {
+            m_plotter_manager.get_plot_given_signal_index( t_indexes.first() )->replot();
+        }
+    }
+}
+
+void MainWindow::on_actionmouse_cursors_at_signal_toggled(bool arg1)
+{
+    m_plotter_manager.update_common_plot_properties( PlotProperties::mouse_cursors, arg1  );
+}
 
 bool MainWindow::event(QEvent *event)
 {
@@ -426,6 +474,14 @@ bool MainWindow::event(QEvent *event)
         }
 
     }
+    else if ( event->type() == QEvent::Resize )
+    {
+        if ( !get_visible_plots().isEmpty() )
+        {
+            m_plotter_manager.replot_all();
+        }
+    }
+
     return QWidget::event(event);
 
 }
@@ -434,6 +490,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
     switch(event->type())
     {
+
         case QMouseEvent::MouseMove:
         {
             if( ui->actionmouse_cursors_at_signal->isChecked() )
@@ -450,9 +507,10 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
         break;
 
-    case QEvent::MouseButtonDblClick:
+        case QEvent::MouseButtonDblClick:
         {
             qDebug() << "Dblclk";
+            qDebug() << watched->objectName();
             QTableWidget *t_table_widget( get_visible_tableWidget() );
             if( watched == t_table_widget )
             {
@@ -481,35 +539,4 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     }
 
     return false;
-}
-
-void MainWindow::on_tabWidget_tabCloseRequested(int index)
-{
-    ui->tabWidget->removeTab(index);
-}
-
-void MainWindow::on_actionzoom_rect_toggled(bool arg1)
-{
-    m_plotter_manager.update_common_plot_properties( rect_zoom, arg1 );
-}
-
-void MainWindow::on_actionnormalize_triggered()
-{
-    if ( !get_visible_plots().isEmpty() )
-    {
-        QList< int > t_indexes(m_plotter_manager.get_signal_indexes_from_plot( get_visible_plots().first() ) );
-        for( int l_var0 = 0; l_var0 < t_indexes.size(); l_var0++ )
-        {
-            m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0), m_plotter_manager.get_data_for_customPlot_normalized( t_indexes.at(l_var0) ) );
-        }
-        if( !t_indexes.isEmpty() )
-        {
-            m_plotter_manager.get_plot_given_signal_index( t_indexes.first() )->replot();
-        }
-    }
-}
-
-void MainWindow::on_actionmouse_cursors_at_signal_toggled(bool arg1)
-{
-    m_plotter_manager.update_common_plot_properties( PlotProperties::mouse_cursors, arg1  );
 }

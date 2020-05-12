@@ -24,3 +24,9 @@ void FileFormatterDialog::on_buttonBox_clicked(QAbstractButton *button)
         m_max_columns = ui->max_columns_lineedit->text().toInt();
     }
 }
+
+
+void FileFormatterDialog::on_time_values_x_values_stateChanged(int arg1)
+{
+    m_time_values_are_x_values = arg1;
+}

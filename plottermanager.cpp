@@ -175,8 +175,6 @@ QPair<QVector<double>, QVector<double> > PlotterManager::get_data_for_customPlot
     int t_size = signal.size();
     QVector<double> x(t_size), y(t_size);
 
-
-
     for( int l_var0 = 0; l_var0 < t_size; l_var0++ )
     {
         x[l_var0] = signal.at(l_var0).x();
@@ -271,10 +269,22 @@ void PlotterManager::update_common_plot_properties(const PlotProperties &plot_pr
                 break;
             case mouse_cursors:
                 plot->layer("MouseCursors")->setVisible(enabled);
+                plot->replot();
             break;
             default:
                 break;
         }
+    }
+}
+
+void PlotterManager::replot_all()
+{
+    QHash< int, QCustomPlot* >::iterator t_has_iterator =  m_plot_widget_2_plot_id.begin();
+    while( t_has_iterator != m_plot_widget_2_plot_id.end() )
+    {
+        t_has_iterator.value()->replot();
+        t_has_iterator++;
+
     }
 }
 
@@ -289,17 +299,25 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
     for( int l_var0 = 0; l_var0 < m_default_plot_layers.size(); l_var0++ )
     {
         plot->addLayer(m_default_plot_layers.at(l_var0));
+
     }
+
+    plot->layer("MouseCursors")->setVisible(false);
+
     // add mouse cursors
     QCPItemStraightLine *x_line = new QCPItemStraightLine(plot);
     QCPItemStraightLine *y_line = new QCPItemStraightLine(plot);
     x_line->setLayer("MouseCursors");
     x_line->setObjectName("line_x");
     x_line->setSelectable(false);
+    x_line->position("point1")->setCoords( QPointF( 0.0, 0.0 ) );
+    x_line->position("point2")->setCoords( QPointF( 0.0, 0.0 ) );
 
     y_line->setLayer("MouseCursors");
     y_line->setObjectName("line_y");
     y_line->setSelectable(false);
+    y_line->position("point1")->setCoords( QPointF( 0.0, 0.0 ) );
+    y_line->position("point2")->setCoords( QPointF( 0.0, 0.0 ) );
 
 }
 
@@ -318,7 +336,7 @@ bool PlotterManager::add_signal_at_plot( int signal_id, int plot_id )
     /*Add name and coordinates*/
     QCPItemText *name_coordinates = new QCPItemText( plot );
     name_coordinates->setLayer("SignalNames");
-    name_coordinates->position->setType( QCPItemPosition::ptAbsolute );
+    name_coordinates->position->setType( QCPItemPosition::ptViewportRatio );
     name_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
     name_coordinates->setColor( signal->get_signal_pen().color() );
     name_coordinates->setText( signal->get_signal_name() );
