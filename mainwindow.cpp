@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setAcceptDrops(true);
+    create_new_tab_plot( QString::number( ui->tabWidget->count() ) );
     initialize_file_formatter_dialog();
 }
 
@@ -84,7 +85,10 @@ void MainWindow::open_file(const QString &file_name)
         i_new_signals++;
     }
 
-    create_new_tab_plot( file_name );
+    if( ui->tabWidget->count() == 0)
+    {
+        create_new_tab_plot( file_name );
+    }
 
     plot_id = ui->tabWidget->currentWidget()->children().first()->objectName().toInt();
 
@@ -380,6 +384,21 @@ void MainWindow::set_signal_as_x_axis_values(int signal_id)
             plot_id = possible_plots.first();
             QCustomPlot *plot( m_plotter_manager.get_plot_given_plot_index( plot_id ) );
 
+            // List of current shown signals at plot
+            QList< int > t_showed_signals_at_plot = m_plotter_manager.get_signal_indexes_from_plot( plot_id );
+            QVector<double> t_signal_container;
+
+            t_signal_container = m_signalDb->get_signal_y_values( signal_id ); // X values are what assigned new values
+
+            QListIterator<int> t_signals_iterartor ( t_showed_signals_at_plot );
+
+            while( t_signals_iterartor.hasNext() )
+            {
+                int t_signal_id = t_signals_iterartor.next();
+                m_signalDb->set_signal_x_values(t_signal_id, t_signal_container );
+                m_plotter_manager.update_data_signal_at_plot( t_signal_id, m_signalDb->get_signal_data( t_signal_id ) );
+            }
+            plot->xAxis->setLabel(m_signalDb->get_signal_name( signal_id) );
             plot->rescaleAxes();
             plot->replot();
         }
@@ -403,6 +422,7 @@ void MainWindow::on_actionzoom_rect_toggled(bool arg1)
 
 void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *t_item)
 {
+    QFlags<Qt::MouseButton> t_mouse_button = QApplication::mouseButtons();
     QTableWidget *t_table_widget( get_visible_tableWidget() );
     if( t_table_widget == nullptr )
     {
@@ -412,7 +432,14 @@ void MainWindow::tableWidget_itemDoubleClicked(QTableWidgetItem *t_item)
     if( t_item->column() == 1 )
     {
         signal_id =  t_table_widget->item( t_item->row(), 0 )->text().toInt();
-        tableWidget_itemDoubleClicked( signal_id );
+        if( t_mouse_button == Qt::LeftButton )
+        {
+            tableWidget_itemDoubleClicked( signal_id );
+        }else if ( t_mouse_button == Qt::RightButton )
+        {
+            set_signal_as_x_axis_values( signal_id );
+        }
+
     }
 }
 

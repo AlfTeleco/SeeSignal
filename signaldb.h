@@ -29,6 +29,10 @@ public:
     bool                    close_signal( int signal_id );
     QString                 get_signal_name( int signal_id ) const;
     QPolygonF               get_signal_data( int signal_id ) const;
+    QVector< double >       get_signal_x_values( int signal_id ) const;
+    bool                    set_signal_x_values(int signal_id, const QVector<double> &data);
+    QVector< double >       get_signal_y_values( int signal_id ) const;
+    bool                    set_signal_y_values(int signal_id, const QVector<double> &data);
     QPen                    get_signal_pen( int signal_id ) const;
     QHash< int, QString >   get_opened_signals() const;
     QColor                  create_new_colour();

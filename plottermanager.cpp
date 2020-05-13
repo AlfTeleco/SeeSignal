@@ -233,6 +233,35 @@ int PlotterManager::get_maximum_from_vector(QVector<double> values)
     return  ret;
 }
 
+bool PlotterManager::update_data_signal_at_plot(int signal_id, const QPolygonF &new_signal_data )
+{
+    QCPGraph *t_graph( nullptr );
+
+    QPair< QVector< double >, QVector< double > > data;
+
+    for( int l_var0 = 0; l_var0 < new_signal_data.size(); l_var0++ )
+    {
+        data.first.append( new_signal_data.at(l_var0).x() );
+        data.second.append( new_signal_data.at(l_var0).y() );
+    }
+
+    auto plot = get_plot_given_signal_index( signal_id );
+    for( int l_var0 = 0; l_var0 < plot->graphCount(); l_var0++ )
+    {
+        if( plot->graph(l_var0)->name().toInt() == signal_id )
+        {
+            t_graph = plot->graph(l_var0);
+            break;
+        }
+    }
+    if( t_graph != nullptr )
+    {
+        t_graph->setData( data.first, data.second );
+        return true;
+    }
+    return false;
+}
+
 bool PlotterManager::update_data_signal_at_plot(int signal_id, QPair<QVector<double>, QVector<double> > data)
 {
     QCPGraph *t_graph( nullptr );
@@ -290,6 +319,7 @@ void PlotterManager::replot_all()
 
 void PlotterManager::initialize_plot(QCustomPlot *plot)
 {
+    plot->setOpenGl( true );
     plot->setInteractions(QCP::iSelectPlottables | QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect );
     plot->xAxis->setLabel("X");
     plot->yAxis->setLabel("Y");
