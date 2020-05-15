@@ -241,32 +241,15 @@ void MainWindow::update_mouse_cursors(QMouseEvent *event)
     if( get_visible_plots().isEmpty() )
         return;
 
-    QCustomPlot *plot = m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() );
-    if( !plot->axisRect()->rect().contains( event->pos().x(), event->pos().y() ) )
-    {
-        plot->layer("MouseCursors")->setVisible(false);
-        plot->replot();
+    m_plotter_manager.update_mouse_cursors( event, get_visible_plots().first() );
+}
+
+void MainWindow::update_mouse_coords(QMouseEvent *event)
+{
+    if( get_visible_plots().isEmpty() )
         return;
-    }else if( !plot->layer("MouseCursors")->visible() )
-    {
-         plot->layer("MouseCursors")->setVisible(true);
-    }
 
-    QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
-
-    QCPItemStraightLine *t_lineX = dynamic_cast < QCPItemStraightLine* > ( plot->layer( "MouseCursors" )->children().at( 0 ) );
-    QCPItemStraightLine *t_lineY = dynamic_cast < QCPItemStraightLine* > ( plot->layer( "MouseCursors" )->children().at( 1 ) );
-    QPointF xlineStart( plot->xAxis->range().lower, mousePosition.y() );
-    QPointF xlineEnd( plot->xAxis->range().upper, mousePosition.y() );
-    QPointF ylineStart( mousePosition.x(), plot->yAxis->range().lower );
-    QPointF ylineEnd( mousePosition.x(),  plot->yAxis->range().upper );
-
-    t_lineX->position("point1")->setCoords( xlineStart );
-    t_lineX->position("point2")->setCoords( xlineEnd );
-    t_lineY->position("point1")->setCoords( ylineStart );
-    t_lineY->position("point2")->setCoords( ylineEnd );
-    plot->replot();
-
+    m_plotter_manager.update_mouse_coords( event, get_visible_plots().first() );
 }
 
 QList< int > MainWindow::get_visible_plots()
@@ -520,9 +503,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
         case QMouseEvent::MouseMove:
         {
+            QMouseEvent *t_mouse_event( dynamic_cast<QMouseEvent*>(event) );
+            update_mouse_coords( t_mouse_event );
             if( ui->actionmouse_cursors_at_signal->isChecked() )
             {
-                update_mouse_cursors( dynamic_cast<QMouseEvent*>(event) );
+                update_mouse_cursors( t_mouse_event );
             }
         }
         break;

@@ -333,6 +333,8 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
     }
 
     plot->layer("MouseCursors")->setVisible(false);
+    plot->layer("MouseCoordinates")->setVisible(false);
+
 
     // add mouse cursors
     QCPItemStraightLine *x_line = new QCPItemStraightLine(plot);
@@ -348,6 +350,25 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
     y_line->setSelectable(false);
     y_line->position("point1")->setCoords( QPointF( 0.0, 0.0 ) );
     y_line->position("point2")->setCoords( QPointF( 0.0, 0.0 ) );
+
+
+    /*Add mouse coordinates*/
+    QCPItemText *mouse_coordinates = new QCPItemText( plot );
+    mouse_coordinates->setLayer("MouseCoordinates");
+    mouse_coordinates->position->setType( QCPItemPosition::ptViewportRatio );
+    mouse_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
+    mouse_coordinates->setPen( QPen( Qt::black ) );
+    mouse_coordinates->setText( "[ 0.0 , 0.0 ]" );
+    mouse_coordinates->setFont( QFont( plot->font().family(), 10) );
+    mouse_coordinates->setSelectable( false );
+
+    QFontMetrics *fontMetrics = new QFontMetrics( mouse_coordinates->font() );
+    int pixels_length = fontMetrics->width( mouse_coordinates->text() );
+    QPointF label_position = plot->axisRect()->bottomRight();
+    label_position.setX( label_position.x() - pixels_length );
+    label_position.setY( label_position.y() + fontMetrics->height() );
+
+    mouse_coordinates->position->setPixelPosition( label_position ); // move 10 pixels to the top from bracket center anchor
 
 }
 
@@ -379,6 +400,7 @@ bool PlotterManager::add_signal_at_plot( int signal_id, int plot_id )
     label_position.setX( label_position.x() - pixels_length );
     label_position.setY( label_position.y() + fontMetrics->height() * get_signal_indexes_from_plot( plot_id ).count() );
     name_coordinates->position->setPixelPosition( label_position ); // move 10 pixels to the top from bracket center anchor
+
     return true;
 }
 
@@ -446,5 +468,60 @@ QCustomPlot *PlotterManager::get_plot_given_signal_index(int signal_id)
 
 void PlotterManager::set_selected_graphs(QList<int> signals_id, bool selected)
 {
+
+}
+
+void PlotterManager::update_mouse_cursors(QMouseEvent *event, int plot_id)
+{
+    QCustomPlot *plot = m_plot_widget_2_plot_id.value( plot_id );
+    if( !plot->axisRect()->rect().contains( event->pos().x(), event->pos().y() ) )
+    {
+        plot->layer("MouseCursors")->setVisible(false);
+        plot->replot();
+        return;
+    }else if( !plot->layer("MouseCursors")->visible() )
+    {
+         plot->layer("MouseCursors")->setVisible(true);
+    }
+
+    QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
+
+    QCPItemStraightLine *t_lineX = dynamic_cast < QCPItemStraightLine* > ( plot->layer( "MouseCursors" )->children().at( 0 ) );
+    QCPItemStraightLine *t_lineY = dynamic_cast < QCPItemStraightLine* > ( plot->layer( "MouseCursors" )->children().at( 1 ) );
+    QPointF xlineStart( plot->xAxis->range().lower, mousePosition.y() );
+    QPointF xlineEnd( plot->xAxis->range().upper, mousePosition.y() );
+    QPointF ylineStart( mousePosition.x(), plot->yAxis->range().lower );
+    QPointF ylineEnd( mousePosition.x(),  plot->yAxis->range().upper );
+
+    t_lineX->position("point1")->setCoords( xlineStart );
+    t_lineX->position("point2")->setCoords( xlineEnd );
+    t_lineY->position("point1")->setCoords( ylineStart );
+    t_lineY->position("point2")->setCoords( ylineEnd );
+}
+
+void PlotterManager::update_mouse_coords(QMouseEvent *event, int plot_id)
+{
+    QCustomPlot *plot = m_plot_widget_2_plot_id.value( plot_id );
+    if( !plot->axisRect()->rect().contains( event->pos().x(), event->pos().y() ) )
+    {
+        plot->layer("MouseCoordinates")->setVisible(false);
+        plot->replot();
+        return;
+    }else if( !plot->layer("MouseCoordinates")->visible() )
+    {
+         plot->layer("MouseCoordinates")->setVisible(true);
+    }
+
+    QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
+    QCPItemText *mouse_coordinates = dynamic_cast < QCPItemText* > ( plot->layer( "MouseCoordinates" )->children().at( 0 ) );
+
+    if( mouse_coordinates == nullptr )
+    {
+        return;
+    }
+
+    mouse_coordinates->setText( "[ " + QString::number( mousePosition.x() ) + " , " +  QString::number( mousePosition.y() ) + " ]");
+    plot->replot();
+
 
 }

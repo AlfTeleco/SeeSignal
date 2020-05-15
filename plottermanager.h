@@ -83,6 +83,8 @@ public slots:
     void            update_signal_names( int plot_id );
 
 
+    void            update_mouse_cursors(QMouseEvent *event, int plot_id);
+    void            update_mouse_coords(QMouseEvent *event, int plot_id);
 signals:
 
 };

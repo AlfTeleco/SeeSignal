@@ -48,6 +48,7 @@ private slots:
     void                remove_signal_from_table( int signal_id );
     void                remove_signals_from_table(QList<int> signals_id);
     void                update_mouse_cursors( QMouseEvent *event );
+    void                update_mouse_coords( QMouseEvent *event );
 
     void                on_actionFile_format_triggered();
 
@@ -87,5 +88,6 @@ private:
     QTableWidget        *get_visible_tableWidget();
 
     void                initialize_file_formatter_dialog();
+
 };
 #endif // MAINWINDOW_H
