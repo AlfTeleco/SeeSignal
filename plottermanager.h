@@ -51,7 +51,7 @@ public:
     void            set_selected_graphs( QList< int > signals_id, bool selected );
     QPair<QVector<double>, QVector<double> > get_data_for_customPlot_given_signal_id( int signal_id );
     QPair<QVector<double>, QVector<double> > get_data_for_customPlot_normalized(int signal_id );
-    int              get_maximum_from_vector( QVector< double > values );
+    double           get_maximum_from_vector(const QVector<double> &values );
     bool             update_data_signal_at_plot( int signal_id, QPair<QVector<double>, QVector<double> > data);
     bool             update_data_signal_at_plot(int signal_id, const QPolygonF &new_signal_data);
     void             update_common_plot_properties( const PlotProperties &plot_property, bool enabled );
@@ -75,17 +75,28 @@ private:
                                         };
 
     void                                initialize_plot( QCustomPlot *plot );
+    void                                initialize_layers( QCustomPlot *plot );
+    void                                initialize_mouse_cursors( QCustomPlot *plot );
+    void                                initialize_mouse_coords( QCustomPlot *plot );
+    void                                initialize_axis( QCustomPlot *plot );
+
+private slots:
+
+    /* Plot methods */
+    void                                graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
 
 public slots:
 
-    bool            remove_graph_from_plot( int signal_id );
-    bool            remove_signal_from_dbs( int signal_id );
-    void            update_signal_names( int plot_id );
+    bool                                remove_graph_from_plot( int signal_id );
+    bool                                remove_signal_from_dbs( int signal_id );
+    void                                update_signal_names( int plot_id );
+    void                                update_mouse_cursors(QMouseEvent *event, int plot_id);
+    void                                update_mouse_coords(QMouseEvent *event, int plot_id);
+    void                                cast_signal_analysis_results( int plot_id, int signal_id );
 
-
-    void            update_mouse_cursors(QMouseEvent *event, int plot_id);
-    void            update_mouse_coords(QMouseEvent *event, int plot_id);
 signals:
+
+    void                                update_signal_analysis_results( float signal_average, float first_harmonic, float std_deviation );
 
 };
 

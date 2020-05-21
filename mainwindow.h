@@ -66,7 +66,15 @@ private slots:
 
     void                on_actionmouse_cursors_at_signal_toggled(bool arg1);
 
+    void                on_actionauto_signal_analysis_toggled(bool arg1);
 
+    void                update_signal_anylsis_parameters( float signal_average, float first_harmonic, float std_deviation );
+
+    void                on_actionsave_plot_triggered();
+
+    void on_actionone_graph_per_plot_triggered();
+
+    void on_actionAbout_triggered();
 
 private:
     Ui::MainWindow      *ui;

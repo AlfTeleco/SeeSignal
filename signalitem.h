@@ -1,6 +1,7 @@
 #ifndef SIGNALITEM_H
 #define SIGNALITEM_H
 
+#include <QtMath>
 #include <QObject>
 #include <QPolygonF>
 #include <QString>
@@ -24,7 +25,9 @@ public:
     inline int         get_signal_index() const { return m_signal_index; }
     inline QPen        get_signal_pen()   const{ return m_signal_pen; }
     inline QPolygonF   get_signal_data()  const  { return m_signal_data; }
-
+    float              get_signal_average() const;
+    float              get_signal_first_harmonic() const;
+    float              get_signal_std_deviation() const;
 
 
 public slots:

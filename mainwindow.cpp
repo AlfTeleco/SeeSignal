@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
     setAcceptDrops(true);
     create_new_tab_plot( QString::number( ui->tabWidget->count() ) );
     initialize_file_formatter_dialog();
+    ui->tool_signal_analysis->setVisible(false);
+//    connect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
 }
 
 MainWindow::~MainWindow()
@@ -26,7 +28,7 @@ int MainWindow::create_same_tab_plot()
     int new_index( -1 );
     QCustomPlot *plot = new QCustomPlot(ui->tabWidget->currentWidget());
     plot->addLayer("labels");
-    new_index = m_plotter_manager.add_plot(plot);
+    new_index = m_plotter_manager.add_plot( plot );
     plot->installEventFilter( this );
     ui->tabWidget->currentWidget()->installEventFilter( this );
 
@@ -50,7 +52,6 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(1,2);
 
     connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
-    connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
 }
@@ -433,10 +434,13 @@ void MainWindow::on_actionnormalize_triggered()
         QList< int > t_indexes(m_plotter_manager.get_signal_indexes_from_plot( get_visible_plots().first() ) );
         for( int l_var0 = 0; l_var0 < t_indexes.size(); l_var0++ )
         {
-            m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0), m_plotter_manager.get_data_for_customPlot_normalized( t_indexes.at(l_var0) ) );
+            m_signalDb->set_signal_y_values( t_indexes.at(l_var0), m_plotter_manager.get_data_for_customPlot_normalized( t_indexes.at(l_var0) ).second );
+            //m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0),  ) );
+            m_plotter_manager.update_data_signal_at_plot( t_indexes.at(l_var0), m_signalDb->get_signal_data( t_indexes.at(l_var0) ) );
         }
         if( !t_indexes.isEmpty() )
         {
+            m_plotter_manager.get_plot_given_signal_index( t_indexes.first() )->rescaleAxes();
             m_plotter_manager.get_plot_given_signal_index( t_indexes.first() )->replot();
         }
     }
@@ -445,6 +449,61 @@ void MainWindow::on_actionnormalize_triggered()
 void MainWindow::on_actionmouse_cursors_at_signal_toggled(bool arg1)
 {
     m_plotter_manager.update_common_plot_properties( PlotProperties::mouse_cursors, arg1  );
+}
+
+
+void MainWindow::on_actionauto_signal_analysis_toggled(bool arg1)
+{
+    if( arg1 )
+    {
+        connect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
+    }
+    else
+    {
+        disconnect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
+    }
+    ui->tool_signal_analysis->setVisible( arg1 );
+    ui->tool_signal_analysis->setEnabled( arg1 );
+}
+
+void MainWindow::update_signal_anylsis_parameters(float signal_average, float first_harmonic, float std_deviation)
+{
+    ui->signal_average_label_value->setText( QString::number( signal_average ) );
+    ui->signal_std_label_value->setText( QString::number( std_deviation ) );
+    ui->signal_first_harmonic_label_value->setText( QString::number( first_harmonic ) );
+}
+
+void MainWindow::on_actionsave_plot_triggered()
+{
+    if( get_visible_plots().isEmpty() )
+    {
+        return;
+    }
+
+    QString t_fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+                               m_open_file_path,
+                               tr("Images (*.png *.pdf *.jpg *.bmp )"));
+
+    QCustomPlot *plot = m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() );
+
+    QString t_file_type = t_fileName.split('.').last();
+
+    if( t_file_type == "pdf")
+    {
+        plot->savePdf( t_fileName, 0, 0, QCP::epAllowCosmetic ,ui->tabWidget->tabText( ui->tabWidget->currentIndex() ) );
+    }
+    else if( t_file_type == "jpg" )
+    {
+        plot->saveJpg( t_fileName );
+    }
+    else if( t_file_type == "bmp" )
+    {
+        plot->saveBmp( t_fileName );
+    }
+    else if( t_file_type == "png" )
+    {
+        plot->savePng( t_fileName );
+    }
 }
 
 bool MainWindow::event(QEvent *event)
@@ -551,4 +610,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     }
 
     return false;
+}
+
+void MainWindow::on_actionone_graph_per_plot_triggered()
+{
+
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox::about(this, "SeeSig, a simple program to see signals data",    "SeeSig was programmed by Alvaro Guzman\n"
+                                                                                "You can find code and conctact at\n"
+                                                                                "https://github.com/AlfTeleco");
 }

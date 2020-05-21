@@ -59,19 +59,6 @@ bool PlotterManager::remove_graph_from_plot( int signal_id )
         }
 
         update_signal_names( plot_id );
-//        QCPItemText *label;
-//        for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
-//        {
-//            if( plot->item( l_var0 )->layer()->name() == "SignalNames" )
-//            {
-//                label = dynamic_cast< QCPItemText*>( plot->item( l_var0 ) );
-//                if( label->text() == m_signal_db->get_signal_name( signal_id ) )
-//                {
-//                    plot->removeItem( label );
-
-//                }
-//            }
-//        }
     }
     return ret;
 }
@@ -89,6 +76,10 @@ void PlotterManager::update_signal_names( int plot_id )
 
     QCustomPlot *plot = get_plot_given_plot_index( plot_id );
 
+    if( plot == nullptr  )
+    {
+        return;
+    }
     // First delete all names
     QList<QCPItemText*> name_coordinates_list;
     for( int l_var0 = 0; l_var0 < plot->itemCount(); l_var0++ )
@@ -98,6 +89,7 @@ void PlotterManager::update_signal_names( int plot_id )
             name_coordinates_list.append( dynamic_cast< QCPItemText*>( plot->item( l_var0 ) ) );
         }
     }
+
 
     QListIterator< QCPItemText* > t_list_iterator( name_coordinates_list );
     while( t_list_iterator.hasNext() )
@@ -152,6 +144,7 @@ int PlotterManager::add_plot(QCustomPlot *new_plot)
     new_plot->setObjectName( QString::number( new_index ) );
     initialize_plot( new_plot );
     m_plot_widget_2_plot_id.insert( new_index, new_plot );
+    connect( new_plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
 }
@@ -189,20 +182,14 @@ QPair<QVector<double>, QVector<double> > PlotterManager::get_data_for_customPlot
 
 QPair<QVector<double>, QVector<double> > PlotterManager::get_data_for_customPlot_normalized(int signal_id)
 {
-    QPolygonF signal = m_signal_db->get_signal_data( signal_id );
-    int t_size = signal.size();
-    QVector<double> x(t_size), y(t_size);
+    QVector<double> x,y;
 
+    x = m_signal_db->get_signal_x_values( signal_id );
+    y = m_signal_db->get_signal_y_values( signal_id );
 
-
-    for( int l_var0 = 0; l_var0 < t_size; l_var0++ )
-    {
-        x[l_var0] = signal.at(l_var0).x();
-        y[l_var0] = signal.at(l_var0).y();
-    }
+    int t_size = y.size();
 
     double max = get_maximum_from_vector( y );
-
 
     for( int l_var0 = 0; l_var0 < t_size; l_var0++ )
     {
@@ -215,7 +202,7 @@ QPair<QVector<double>, QVector<double> > PlotterManager::get_data_for_customPlot
     return ret;
 }
 
-int PlotterManager::get_maximum_from_vector(QVector<double> values)
+double PlotterManager::get_maximum_from_vector( const QVector<double> &values)
 {
     int ret(0);
     if( values.isEmpty() )
@@ -225,12 +212,12 @@ int PlotterManager::get_maximum_from_vector(QVector<double> values)
 
     for( int l_var0 = 0; l_var0 < values.size(); l_var0++ )
     {
-        if( values.at( l_var0 ) > values.at( ret ) )
+        if( values.at( l_var0 ) >= values.at( ret ) )
         {
             ret = l_var0;
         }
     }
-    return  ret;
+    return  values.at( ret );
 }
 
 bool PlotterManager::update_data_signal_at_plot(int signal_id, const QPolygonF &new_signal_data )
@@ -313,7 +300,7 @@ void PlotterManager::replot_all()
     {
         t_has_iterator.value()->replot();
         t_has_iterator++;
-
+        update_signal_names( t_has_iterator.key() );
     }
 }
 
@@ -321,21 +308,29 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
 {
     plot->setOpenGl( true );
     plot->setInteractions(QCP::iSelectPlottables | QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect );
-    plot->xAxis->setLabel("X");
-    plot->yAxis->setLabel("Y");
-    plot->xAxis->setRange(-50.0, 50.0 );
-    plot->yAxis->setRange(-50.0, 50.0 );
+    initialize_layers(plot);
+    initialize_mouse_cursors(plot);
+}
+
+void PlotterManager::initialize_layers(QCustomPlot *plot)
+{
+    if( plot == nullptr )
+    {
+        return;
+    }
 
     for( int l_var0 = 0; l_var0 < m_default_plot_layers.size(); l_var0++ )
     {
-        plot->addLayer(m_default_plot_layers.at(l_var0));
+        plot->addLayer( m_default_plot_layers.at( l_var0 ) );
 
     }
 
     plot->layer("MouseCursors")->setVisible(false);
-    plot->layer("MouseCoordinates")->setVisible(false);
 
+}
 
+void PlotterManager::initialize_mouse_cursors(QCustomPlot *plot)
+{
     // add mouse cursors
     QCPItemStraightLine *x_line = new QCPItemStraightLine(plot);
     QCPItemStraightLine *y_line = new QCPItemStraightLine(plot);
@@ -350,14 +345,17 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
     y_line->setSelectable(false);
     y_line->position("point1")->setCoords( QPointF( 0.0, 0.0 ) );
     y_line->position("point2")->setCoords( QPointF( 0.0, 0.0 ) );
+}
 
-
+void PlotterManager::initialize_mouse_coords(QCustomPlot *plot)
+{
     /*Add mouse coordinates*/
     QCPItemText *mouse_coordinates = new QCPItemText( plot );
     mouse_coordinates->setLayer("MouseCoordinates");
+    mouse_coordinates->setObjectName("mouse_coordinates");
     mouse_coordinates->position->setType( QCPItemPosition::ptViewportRatio );
     mouse_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
-    mouse_coordinates->setPen( QPen( Qt::black ) );
+    mouse_coordinates->setColor( Qt::black );
     mouse_coordinates->setText( "[ 0.0 , 0.0 ]" );
     mouse_coordinates->setFont( QFont( plot->font().family(), 10) );
     mouse_coordinates->setSelectable( false );
@@ -366,9 +364,28 @@ void PlotterManager::initialize_plot(QCustomPlot *plot)
     int pixels_length = fontMetrics->width( mouse_coordinates->text() );
     QPointF label_position = plot->axisRect()->bottomRight();
     label_position.setX( label_position.x() - pixels_length );
-    label_position.setY( label_position.y() + fontMetrics->height() );
-
+    label_position.setY( label_position.y() - fontMetrics->height() );
     mouse_coordinates->position->setPixelPosition( label_position ); // move 10 pixels to the top from bracket center anchor
+}
+
+void PlotterManager::initialize_axis(QCustomPlot *plot)
+{
+    plot->xAxis->setLabel("X");
+    plot->yAxis->setLabel("Y");
+    plot->xAxis->setRange(-50.0, 50.0 );
+    plot->yAxis->setRange(-50.0, 50.0 );
+}
+
+void PlotterManager::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
+{
+    QCPGraph *t_possible_graph = dynamic_cast<QCPGraph*>( plottable );
+
+    if( t_possible_graph == nullptr )
+    {
+        return;
+    }
+
+    cast_signal_analysis_results( m_plot_id_2_signal_id.key( t_possible_graph->name().toInt() ), t_possible_graph->name().toInt() );
 
 }
 
@@ -502,26 +519,36 @@ void PlotterManager::update_mouse_cursors(QMouseEvent *event, int plot_id)
 void PlotterManager::update_mouse_coords(QMouseEvent *event, int plot_id)
 {
     QCustomPlot *plot = m_plot_widget_2_plot_id.value( plot_id );
-    if( !plot->axisRect()->rect().contains( event->pos().x(), event->pos().y() ) )
-    {
-        plot->layer("MouseCoordinates")->setVisible(false);
-        plot->replot();
-        return;
-    }else if( !plot->layer("MouseCoordinates")->visible() )
-    {
-         plot->layer("MouseCoordinates")->setVisible(true);
-    }
 
+    plot->layer("MouseCoordinates")->setVisible(true);
     QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
-    QCPItemText *mouse_coordinates = dynamic_cast < QCPItemText* > ( plot->layer( "MouseCoordinates" )->children().at( 0 ) );
+    if( plot->layer( "MouseCoordinates" )->children().isEmpty() )
+    {
+        initialize_mouse_coords( plot );
+    }
 
-    if( mouse_coordinates == nullptr )
+    QCPItemText *mouse_coordinates = dynamic_cast < QCPItemText* > ( plot->layer( "MouseCoordinates" )->children().at( 0 ) );
+    mouse_coordinates->setText( "[ " + QString::number( mousePosition.x() ) + " , " +  QString::number( mousePosition.y() ) + " ]");
+    QFontMetrics *fontMetrics = new QFontMetrics( mouse_coordinates->font() );
+    int pixels_length = fontMetrics->width( mouse_coordinates->text() );
+    QPointF label_position = plot->axisRect()->bottomRight();
+    label_position.setX( label_position.x() - pixels_length );
+    label_position.setY( label_position.y() - fontMetrics->height() );
+    mouse_coordinates->position->setPixelPosition( label_position ); // move 10 pixels to the top from bracket center anchor
+    plot->replot();
+}
+
+void PlotterManager::cast_signal_analysis_results(int plot_id, int signal_id)
+{
+    QCustomPlot *plot = m_plot_widget_2_plot_id.value( plot_id );
+    if( plot == nullptr )
     {
         return;
     }
+    float t_average = m_signal_db->get_signal( signal_id )->get_signal_average();
+    float t_std_deviation = m_signal_db->get_signal( signal_id )->get_signal_std_deviation();
+    float t_first_harmonic = m_signal_db->get_signal( signal_id )->get_signal_first_harmonic();
 
-    mouse_coordinates->setText( "[ " + QString::number( mousePosition.x() ) + " , " +  QString::number( mousePosition.y() ) + " ]");
-    plot->replot();
-
+    emit update_signal_analysis_results( t_average, t_first_harmonic, t_std_deviation );
 
 }
