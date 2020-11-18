@@ -9,6 +9,10 @@ MainWindow::MainWindow(QWidget *parent)
     setAcceptDrops(true);
     create_new_tab_plot( QString::number( ui->tabWidget->count() ) );
     initialize_file_formatter_dialog();
+
+    ui->signalCalculator->setVisible(false);
+    ui->op1_edit->installEventFilter( this );
+    ui->op2_edit->installEventFilter( this );
 }
 
 MainWindow::~MainWindow()
@@ -31,7 +35,7 @@ int MainWindow::create_same_tab_plot()
     ui->tabWidget->currentWidget()->installEventFilter( this );
 
     QTableWidget *table_widget = new QTableWidget( ui->tabWidget->currentWidget() );
-    //table_widget->installEventFilter( this );
+    table_widget->installEventFilter( this );
     table_widget->setColumnCount(2);
     QTableWidgetItem *signal_index_item = new QTableWidgetItem(tr("Index"));
     QTableWidgetItem *signal_name_item  = new QTableWidgetItem(tr("Name"));
@@ -41,6 +45,7 @@ int MainWindow::create_same_tab_plot()
     table_widget->horizontalHeader()->setStretchLastSection(true);
     table_widget->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_widget->setSortingEnabled(true);
+    table_widget->setDragEnabled(true);
 
     QHBoxLayout *horizontal_layout = new QHBoxLayout;
     horizontal_layout->addWidget(plot);
@@ -49,7 +54,7 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(0,8);
     horizontal_layout->setStretch(1,2);
 
-    connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
+  //  connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
     connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
@@ -323,7 +328,7 @@ void MainWindow::add_signal_at_table(int signal_id)
     QTableWidgetItem *new_item_signal_id = new QTableWidgetItem( QString::number( signal_id ));
     QTableWidgetItem *new_item_signal_name = new QTableWidgetItem(m_signalDb->get_signal_name( signal_id ));
     new_item_signal_id->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
-    new_item_signal_name->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
+    new_item_signal_name->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled );
     get_visible_tableWidget()->insertRow( get_visible_tableWidget()->rowCount() );
     get_visible_tableWidget()->setItem( get_visible_tableWidget()->rowCount() - 1, 0, new_item_signal_id);
     get_visible_tableWidget()->setItem( get_visible_tableWidget()->rowCount() - 1, 1, new_item_signal_name);
@@ -491,13 +496,13 @@ bool MainWindow::event(QEvent *event)
             m_plotter_manager.replot_all();
         }
     }
-
     return QWidget::event(event);
 
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+
     switch(event->type())
     {
 
@@ -512,17 +517,33 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
         break;
 
+        case QEvent::DragEnter:
+        {
+            if( watched == ui->op1_edit || watched == ui->op2_edit )
+            {
+                QDragEnterEvent *drag_event( dynamic_cast<QDragEnterEvent*>(event));
+                drag_event->setAccepted(true);
+                qDebug() << "Acepto la señal";
+            }
+        }
+        break;
+
         case QEvent::Drop:
         {
-            QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
-            qDebug() << drop_event->source()->objectName();
+            if( watched == ui->op1_edit || watched == ui->op2_edit )
+            {
+                auto t_list = get_selected_signals_at_table();
+                if( !t_list.isEmpty() )
+                {
+                    dynamic_cast< QLineEdit* >( watched )->setText( m_signalDb->get_signal_name( t_list.first() ) );
+                }
+            }
         }
         break;
 
         case QEvent::MouseButtonDblClick:
         {
-            qDebug() << "Dblclk";
-            qDebug() << watched->objectName();
+
             QTableWidget *t_table_widget( get_visible_tableWidget() );
             if( watched == t_table_widget )
             {
@@ -546,6 +567,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
             }
         }
         break;
+
         default:
         break;
     }
