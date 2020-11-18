@@ -20,11 +20,11 @@
    <string>SeeSig</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="SeeSigResources.qrc">
+   <iconset>
     <normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</iconset>
   </property>
   <widget class="QWidget" name="main">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="4">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="8,1">
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="acceptDrops">
@@ -39,6 +39,87 @@
       <property name="movable">
        <bool>true</bool>
       </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="signalCalculator">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Signal Calculator</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Op 1</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <item>
+          <property name="text">
+           <string>X</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>/</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>+</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>-</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Op 2</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit_2"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Show</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -119,7 +200,7 @@
   </widget>
   <action name="actionreset_zoom">
    <property name="icon">
-    <iconset resource="SeeSigResources.qrc">
+    <iconset>
      <normaloff>:/SeeSigResource/RESOURCES/default_zoom.PNG</normaloff>:/SeeSigResource/RESOURCES/default_zoom.PNG</iconset>
    </property>
    <property name="text">
@@ -186,7 +267,7 @@
   </action>
   <action name="actionnormalize">
    <property name="icon">
-    <iconset resource="SeeSigResources.qrc">
+    <iconset>
      <normaloff>:/SeeSigResource/RESOURCES/normalize.png</normaloff>
      <normalon>:/SeeSigResource/RESOURCES/normalize.png</normalon>
      <disabledoff>:/SeeSigResource/RESOURCES/normalize.png</disabledoff>
@@ -218,7 +299,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="SeeSigResources.qrc">
+    <iconset>
      <normaloff>:/SeeSigResource/RESOURCES/mouse_cursors_at_signal.PNG</normaloff>:/SeeSigResource/RESOURCES/mouse_cursors_at_signal.PNG</iconset>
    </property>
    <property name="text">
@@ -233,7 +314,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="SeeSigResources.qrc">
+    <iconset>
      <normaloff>:/SeeSigResource/RESOURCES/band_zoom.PNG</normaloff>:/SeeSigResource/RESOURCES/band_zoom.PNG</iconset>
    </property>
    <property name="text">
@@ -244,8 +325,6 @@
    </property>
   </action>
  </widget>
- <resources>
-  <include location="SeeSigResources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
