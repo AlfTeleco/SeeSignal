@@ -552,3 +552,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
     return false;
 }
+
+void MainWindow::on_action_signal_calculator_toggled(bool arg1)
+{
+    ui->signalCalculator->setEnabled( arg1 );
+    ui->signalCalculator->setVisible( arg1 );
+}

@@ -12,5 +12,6 @@
         <file>RESOURCES/mouse_cursors.PNG</file>
         <file>RESOURCES/SeeSig_icon_floating.ico</file>
         <file>RESOURCES/mouse_cursors_at_signal.PNG</file>
+        <file>RESOURCES/signal_calculator.PNG</file>
     </qresource>
 </RCC>

@@ -20,7 +20,7 @@
    <string>SeeSig</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="SeeSigResources.qrc">
     <normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</iconset>
   </property>
   <widget class="QWidget" name="main">
@@ -197,10 +197,11 @@
    <addaction name="actionone_graph_per_plot"/>
    <addaction name="actionnormalize"/>
    <addaction name="actionmouse_cursors_at_signal"/>
+   <addaction name="action_signal_calculator"/>
   </widget>
   <action name="actionreset_zoom">
    <property name="icon">
-    <iconset>
+    <iconset resource="SeeSigResources.qrc">
      <normaloff>:/SeeSigResource/RESOURCES/default_zoom.PNG</normaloff>:/SeeSigResource/RESOURCES/default_zoom.PNG</iconset>
    </property>
    <property name="text">
@@ -267,7 +268,7 @@
   </action>
   <action name="actionnormalize">
    <property name="icon">
-    <iconset>
+    <iconset resource="SeeSigResources.qrc">
      <normaloff>:/SeeSigResource/RESOURCES/normalize.png</normaloff>
      <normalon>:/SeeSigResource/RESOURCES/normalize.png</normalon>
      <disabledoff>:/SeeSigResource/RESOURCES/normalize.png</disabledoff>
@@ -299,7 +300,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="SeeSigResources.qrc">
      <normaloff>:/SeeSigResource/RESOURCES/mouse_cursors_at_signal.PNG</normaloff>:/SeeSigResource/RESOURCES/mouse_cursors_at_signal.PNG</iconset>
    </property>
    <property name="text">
@@ -314,7 +315,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="SeeSigResources.qrc">
      <normaloff>:/SeeSigResource/RESOURCES/band_zoom.PNG</normaloff>:/SeeSigResource/RESOURCES/band_zoom.PNG</iconset>
    </property>
    <property name="text">
@@ -324,7 +325,24 @@
     <string>Zoom into a defined rectangle at plot</string>
    </property>
   </action>
+  <action name="action_signal_calculator">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="SeeSigResources.qrc">
+     <normaloff>:/SeeSigResource/RESOURCES/signal_calculator.PNG</normaloff>:/SeeSigResource/RESOURCES/signal_calculator.PNG</iconset>
+   </property>
+   <property name="text">
+    <string>signal_calculator</string>
+   </property>
+   <property name="toolTip">
+    <string>Signal calculator</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="SeeSigResources.qrc"/>
+ </resources>
  <connections/>
 </ui>

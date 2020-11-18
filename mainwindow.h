@@ -68,6 +68,8 @@ private slots:
 
 
 
+    void on_action_signal_calculator_toggled(bool arg1);
+
 private:
     Ui::MainWindow      *ui;
     SignalDB            *m_signalDb = SignalDB::instance();
