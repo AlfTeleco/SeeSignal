@@ -177,6 +177,12 @@ QPen SignalDB::get_signal_pen(int signal_id) const
 QHash<int, QString> SignalDB::get_opened_signals() const
 {
     QHash<int, QString> ret_value;
+    QHash< int, SignalItem* >::const_iterator t_iterator = m_signals_db.begin();
+    while(t_iterator != m_signals_db.end() )
+    {
+        ret_value.insert( t_iterator.key(), t_iterator.value()->get_signal_name() );
+        t_iterator++;
+    }
 
     return ret_value;
 }

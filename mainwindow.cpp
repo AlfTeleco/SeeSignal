@@ -54,7 +54,7 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(0,8);
     horizontal_layout->setStretch(1,2);
 
-  //  connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
+    connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
     connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
@@ -579,4 +579,37 @@ void MainWindow::on_action_signal_calculator_toggled(bool arg1)
 {
     ui->signalCalculator->setEnabled( arg1 );
     ui->signalCalculator->setVisible( arg1 );
+}
+
+void MainWindow::on_show_result_operation_clicked()
+{
+    QPolygonF t_new_signal;
+
+    if( ui->operation_symbol->currentText() == 'X' )
+    {
+        t_new_signal = m_operations_manager.perform_mutiplication( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+    else if( ui->operation_symbol->currentText() == '/' )
+    {
+        t_new_signal = m_operations_manager.perform_division( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+    else if( ui->operation_symbol->currentText() == '+' )
+    {
+        t_new_signal = m_operations_manager.perform_addition( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+    else if( ui->operation_symbol->currentText() == '-' )
+    {
+        t_new_signal = m_operations_manager.perform_subtraction( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+
+    if( t_new_signal.length() != 0 )
+    {
+        int t_new_index = m_signalDb->create_signal(ui->op1_edit->text()+ui->operation_symbol->currentText()+ui->op2_edit->text(), t_new_signal );
+        add_signal_at_table( t_new_index );
+        tableWidget_itemDoubleClicked( t_new_index );
+    }
 }
