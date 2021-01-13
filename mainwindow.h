@@ -9,6 +9,7 @@
 #include "fileparser.h"
 #include "plottermanager.h"
 #include "fileformatterdialog.h"
+#include "operationsmanager.h"
 
 
 
@@ -72,9 +73,13 @@ private slots:
 
     void                on_actionsave_plot_triggered();
 
-    void on_actionone_graph_per_plot_triggered();
+    void 					on_actionone_graph_per_plot_triggered();
 
-    void on_actionAbout_triggered();
+    void 					on_actionAbout_triggered();
+
+    void                on_action_signal_calculator_toggled(bool arg1);
+
+    void                on_show_result_operation_clicked();
 
 private:
     Ui::MainWindow      *ui;
@@ -82,6 +87,7 @@ private:
     FileParser          m_file_parser;
     PlotterManager      m_plotter_manager;
     FileFormatterDialog *m_file_formatter;
+    OperationsManager   m_operations_manager;
 
     QString             m_open_file_path;
 

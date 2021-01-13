@@ -156,6 +156,95 @@
       </layout>
      </widget>
     </item>
+    <item>
+     <widget class="QGroupBox" name="signalCalculator">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Signal Calculator</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="op1_label">
+         <property name="text">
+          <string>Op 1</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="op1_edit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="operation_symbol">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <item>
+          <property name="text">
+           <string>X</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>/</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>+</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>-</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="op2_label">
+         <property name="text">
+          <string>Op 2</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="op2_edit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="show_result_operation">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Show</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -226,6 +315,7 @@
    <addaction name="actionnormalize"/>
    <addaction name="actionmouse_cursors_at_signal"/>
    <addaction name="actionauto_signal_analysis"/>
+   <addaction name="action_signal_calculator"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionreset_zoom">
@@ -369,6 +459,21 @@
   <action name="actionAbout">
    <property name="text">
     <string>About...</string>
+   </property>
+  </action>
+  <action name="action_signal_calculator">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="SeeSigResources.qrc">
+     <normaloff>:/SeeSigResource/RESOURCES/signal_calculator.PNG</normaloff>:/SeeSigResource/RESOURCES/signal_calculator.PNG</iconset>
+   </property>
+   <property name="text">
+    <string>signal_calculator</string>
+   </property>
+   <property name="toolTip">
+    <string>Signal calculator</string>
    </property>
   </action>
  </widget>

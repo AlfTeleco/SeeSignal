@@ -11,6 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     initialize_file_formatter_dialog();
     ui->tool_signal_analysis->setVisible(false);
 //    connect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
+    ui->signalCalculator->setVisible(false);
+    ui->op1_edit->installEventFilter( this );
+    ui->op2_edit->installEventFilter( this );
 }
 
 MainWindow::~MainWindow()
@@ -43,6 +46,7 @@ int MainWindow::create_same_tab_plot()
     table_widget->horizontalHeader()->setStretchLastSection(true);
     table_widget->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_widget->setSortingEnabled(true);
+    table_widget->setDragEnabled(true);
 
     QHBoxLayout *horizontal_layout = new QHBoxLayout;
     horizontal_layout->addWidget(plot);
@@ -52,6 +56,7 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(1,2);
 
     connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
+    connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
 
     return new_index;
 }
@@ -324,7 +329,7 @@ void MainWindow::add_signal_at_table(int signal_id)
     QTableWidgetItem *new_item_signal_id = new QTableWidgetItem( QString::number( signal_id ));
     QTableWidgetItem *new_item_signal_name = new QTableWidgetItem(m_signalDb->get_signal_name( signal_id ));
     new_item_signal_id->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
-    new_item_signal_name->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
+    new_item_signal_name->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled );
     get_visible_tableWidget()->insertRow( get_visible_tableWidget()->rowCount() );
     get_visible_tableWidget()->setItem( get_visible_tableWidget()->rowCount() - 1, 0, new_item_signal_id);
     get_visible_tableWidget()->setItem( get_visible_tableWidget()->rowCount() - 1, 1, new_item_signal_name);
@@ -571,10 +576,27 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
         break;
 
+        case QEvent::DragEnter:
+        {
+            if( watched == ui->op1_edit || watched == ui->op2_edit )
+            {
+                QDragEnterEvent *drag_event( dynamic_cast<QDragEnterEvent*>(event));
+                drag_event->setAccepted(true);
+                qDebug() << "Acepto la señal";
+            }
+        }
+        break;
+
         case QEvent::Drop:
         {
-            QDropEvent *drop_event( dynamic_cast<QDropEvent*>( event ) );
-            qDebug() << drop_event->source()->objectName();
+            if( watched == ui->op1_edit || watched == ui->op2_edit )
+            {
+                auto t_list = get_selected_signals_at_table();
+                if( !t_list.isEmpty() )
+                {
+                    dynamic_cast< QLineEdit* >( watched )->setText( m_signalDb->get_signal_name( t_list.first() ) );
+                }
+            }
         }
         break;
 
@@ -612,9 +634,48 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     return false;
 }
 
+void MainWindow::on_action_signal_calculator_toggled(bool arg1)
+{
+    ui->signalCalculator->setEnabled( arg1 );
+    ui->signalCalculator->setVisible( arg1 );
+}
+
 void MainWindow::on_actionone_graph_per_plot_triggered()
 {
 
+}
+
+void MainWindow::on_show_result_operation_clicked()
+{
+    QPolygonF t_new_signal;
+
+    if( ui->operation_symbol->currentText() == 'X' )
+    {
+        t_new_signal = m_operations_manager.perform_mutiplication( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+    else if( ui->operation_symbol->currentText() == '/' )
+    {
+        t_new_signal = m_operations_manager.perform_division( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+    else if( ui->operation_symbol->currentText() == '+' )
+    {
+        t_new_signal = m_operations_manager.perform_addition( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+    else if( ui->operation_symbol->currentText() == '-' )
+    {
+        t_new_signal = m_operations_manager.perform_subtraction( m_signalDb->get_opened_signals().key(ui->op1_edit->text()),
+                                                                           m_signalDb->get_opened_signals().key(ui->op2_edit->text()));
+    }
+
+    if( t_new_signal.length() != 0 )
+    {
+        int t_new_index = m_signalDb->create_signal(ui->op1_edit->text()+ui->operation_symbol->currentText()+ui->op2_edit->text(), t_new_signal );
+        add_signal_at_table( t_new_index );
+        tableWidget_itemDoubleClicked( t_new_index );
+    }
 }
 
 void MainWindow::on_actionAbout_triggered()
