@@ -14,22 +14,18 @@
  * SignalNames
  *
 
-
-
-
 */
 
-
-enum PlotProperties {   rect_zoom     = 0 // selection rect mode
-                        ,normalized // normalization on plot
-                        ,mouse_cursors // normalization on plot
+enum PlotProperties {   rect_zoom     = 0       // selection rect mode
+                        ,normalized             // normalization on plot
+                        ,mouse_cursors          // normalization on plot
                     };
 
 class PlotterManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit PlotterManager(QObject *parent = nullptr );
+    explicit        PlotterManager(QObject *parent = nullptr );
 
     int             get_plot_id_for_given_signal_id( int signal_id );
     QVector<int>    get_signal_ids_for_given_plot_id( int plot_id );
@@ -51,11 +47,12 @@ public:
     void            set_selected_graphs( QList< int > signals_id, bool selected );
     QPair<QVector<double>, QVector<double> > get_data_for_customPlot_given_signal_id( int signal_id );
     QPair<QVector<double>, QVector<double> > get_data_for_customPlot_normalized(int signal_id );
-    double           get_maximum_from_vector(const QVector<double> &values );
-    bool             update_data_signal_at_plot( int signal_id, QPair<QVector<double>, QVector<double> > data);
-    bool             update_data_signal_at_plot(int signal_id, const QPolygonF &new_signal_data);
-    void             update_common_plot_properties( const PlotProperties &plot_property, bool enabled );
-    void             replot_all();
+    double          get_maximum_from_vector(const QVector<double> &values );
+    bool            update_data_signal_at_plot( int signal_id, QPair<QVector<double>, QVector<double> > data);
+    bool            update_data_signal_at_plot(int signal_id, const QPolygonF &new_signal_data);
+    void            update_common_plot_properties( const PlotProperties &plot_property, bool enabled );
+    void            replot_all();
+
 private:
 
     /* For each signal will be an element at the multihash. As each signal can be drawn at several plots simultaneusly there can be several elements with the same signal_id.
@@ -71,7 +68,8 @@ private:
                                         { "MouseCursors",
                                           "MouseCoordinates",
                                           "SignalLabels",
-                                          "SignalNames"
+                                          "SignalNames",
+                                          "Labels"
                                         };
 
     void                                initialize_plot( QCustomPlot *plot );
@@ -87,6 +85,8 @@ private slots:
 
 public slots:
 
+    bool                                add_label_at_plot(const int &p_plot_id, QMouseEvent *p_event );
+    bool                                remove_label_at_plot(const int &p_plot_id , QCPAbstractItem *p_item);
     bool                                remove_graph_from_plot( int signal_id );
     bool                                remove_signal_from_dbs( int signal_id );
     void                                update_signal_names( int plot_id );

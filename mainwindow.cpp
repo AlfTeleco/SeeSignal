@@ -30,7 +30,6 @@ int MainWindow::create_same_tab_plot()
 {
     int new_index( -1 );
     QCustomPlot *plot = new QCustomPlot(ui->tabWidget->currentWidget());
-    plot->addLayer("labels");
     new_index = m_plotter_manager.add_plot( plot );
     plot->installEventFilter( this );
     ui->tabWidget->currentWidget()->installEventFilter( this );
@@ -56,7 +55,9 @@ int MainWindow::create_same_tab_plot()
     horizontal_layout->setStretch(1,2);
 
     connect( table_widget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(tableWidget_itemDoubleClicked(QTableWidgetItem *) ) );
-    connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+    //connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
+    connect( plot, SIGNAL( mouseDoubleClick(QMouseEvent*)), this, SLOT( set_label_at_plot(QMouseEvent*)));
+    connect( plot, SIGNAL( itemClick(QCPAbstractItem*, QMouseEvent*)), this, SLOT( remove_label_at_plot(QCPAbstractItem*)));
 
     return new_index;
 }
@@ -191,6 +192,19 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
     }
 }
 
+void MainWindow::set_label_at_plot( QMouseEvent *event )
+{
+    if( get_visible_plots().isEmpty() )
+        return;
+
+    if( ui->actionset_label->isChecked()) m_plotter_manager.add_label_at_plot( get_visible_plots().first(), event );
+}
+
+void MainWindow::remove_label_at_plot(QCPAbstractItem *p_item)
+{
+    if( ui->actionremove_label->isChecked()) m_plotter_manager.remove_label_at_plot( get_visible_plots().first(), p_item );
+}
+
 void MainWindow::remove_signal_from_table(int signal_id)
 {
     if( signal_id < 0 )
@@ -204,9 +218,6 @@ void MainWindow::remove_signal_from_table(int signal_id)
             get_visible_tableWidget()->removeRow( l_var0 );
         }
     }
-
-    //Delete from QCustomPlot
-   // QCustomPlot *plot = m_plotter_manager.get_plot_given_signal_index( signal_id );
 
 }
 
@@ -683,4 +694,14 @@ void MainWindow::on_actionAbout_triggered()
     QMessageBox::about(this, "SeeSig, a simple program to see signals data",    "SeeSig was programmed by Alvaro Guzman\n"
                                                                                 "You can find code and conctact at\n"
                                                                                 "https://github.com/AlfTeleco");
+}
+
+void MainWindow::on_actionset_label_triggered(bool checked)
+{
+    if( checked ) ui->actionremove_label->setChecked( false );
+}
+
+void MainWindow::on_actionremove_label_triggered(bool checked)
+{
+    if( checked ) ui->actionset_label->setChecked( false );
 }

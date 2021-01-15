@@ -14,5 +14,7 @@
         <file>RESOURCES/mouse_cursors_at_signal.PNG</file>
         <file>RESOURCES/auto_signal_analysis.ico</file>
         <file>RESOURCES/signal_calculator.PNG</file>
+        <file>RESOURCES/set_label_tool.PNG</file>
+        <file>RESOURCES/remove_label_tool.PNG</file>
     </qresource>
 </RCC>

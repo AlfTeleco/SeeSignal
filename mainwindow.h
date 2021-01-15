@@ -41,6 +41,8 @@ private slots:
 
     /* Plot methods */
     void                graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
+    void                set_label_at_plot( QMouseEvent *event );
+    void                remove_label_at_plot( QCPAbstractItem *p_item );
 
     /* Table methods */
     void                select_signal_at_table( int signal_id );
@@ -73,13 +75,17 @@ private slots:
 
     void                on_actionsave_plot_triggered();
 
-    void 					on_actionone_graph_per_plot_triggered();
+    void 				on_actionone_graph_per_plot_triggered();
 
-    void 					on_actionAbout_triggered();
+    void 				on_actionAbout_triggered();
 
     void                on_action_signal_calculator_toggled(bool arg1);
 
     void                on_show_result_operation_clicked();
+
+    void                on_actionset_label_triggered(bool checked);
+
+    void                on_actionremove_label_triggered(bool checked);
 
 private:
     Ui::MainWindow      *ui;

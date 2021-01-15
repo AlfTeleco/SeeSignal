@@ -24,7 +24,7 @@
     <normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</normaloff>:/SeeSigResource/RESOURCES/SeeSig_icon_floating.png</iconset>
   </property>
   <widget class="QWidget" name="main">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="8,1">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="8,1,0">
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
@@ -316,6 +316,8 @@
    <addaction name="actionmouse_cursors_at_signal"/>
    <addaction name="actionauto_signal_analysis"/>
    <addaction name="action_signal_calculator"/>
+   <addaction name="actionset_label"/>
+   <addaction name="actionremove_label"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionreset_zoom">
@@ -474,6 +476,36 @@
    </property>
    <property name="toolTip">
     <string>Signal calculator</string>
+   </property>
+  </action>
+  <action name="actionset_label">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="SeeSigResources.qrc">
+     <normaloff>:/SeeSigResource/RESOURCES/set_label_tool.PNG</normaloff>:/SeeSigResource/RESOURCES/set_label_tool.PNG</iconset>
+   </property>
+   <property name="text">
+    <string>set_label</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert a label at the plot</string>
+   </property>
+  </action>
+  <action name="actionremove_label">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="SeeSigResources.qrc">
+     <normaloff>:/SeeSigResource/RESOURCES/remove_label_tool.PNG</normaloff>:/SeeSigResource/RESOURCES/remove_label_tool.PNG</iconset>
+   </property>
+   <property name="text">
+    <string>remove_label</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove the selected label</string>
    </property>
   </action>
  </widget>
