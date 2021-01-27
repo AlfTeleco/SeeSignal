@@ -87,6 +87,11 @@ private slots:
 
     void                on_actionremove_label_triggered(bool checked);
 
+    void                change_axis_label( QCPAxis *p_axis );
+
+    void                graphDoubleClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *p_mouse_event);
+
+
 private:
     Ui::MainWindow      *ui;
     SignalDB            *m_signalDb = SignalDB::instance();

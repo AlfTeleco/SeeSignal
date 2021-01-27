@@ -58,6 +58,8 @@ int MainWindow::create_same_tab_plot()
     //connect( plot, SIGNAL( plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*,int)));
     connect( plot, SIGNAL( mouseDoubleClick(QMouseEvent*)), this, SLOT( set_label_at_plot(QMouseEvent*)));
     connect( plot, SIGNAL( itemClick(QCPAbstractItem*, QMouseEvent*)), this, SLOT( remove_label_at_plot(QCPAbstractItem*)));
+    connect( plot, SIGNAL( axisDoubleClick(QCPAxis *, QCPAxis::SelectablePart, QMouseEvent *)), this, SLOT( change_axis_label(QCPAxis*)));
+    connect( plot, SIGNAL( plottableDoubleClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(graphDoubleClicked(QCPAbstractPlottable*,int,QMouseEvent*)));
 
     return new_index;
 }
@@ -191,6 +193,7 @@ void MainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
         //select_signal_at_table( graph->name().toInt() );
     }
 }
+
 
 void MainWindow::set_label_at_plot( QMouseEvent *event )
 {
@@ -704,4 +707,15 @@ void MainWindow::on_actionset_label_triggered(bool checked)
 void MainWindow::on_actionremove_label_triggered(bool checked)
 {
     if( checked ) ui->actionset_label->setChecked( false );
+}
+
+void MainWindow::change_axis_label(QCPAxis *p_axis)
+{
+    if( m_plotter_manager.set_axis_label( p_axis ) ) m_plotter_manager.get_plot_given_plot_index( get_visible_plots().first() )->replot();
+}
+
+void MainWindow::graphDoubleClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *p_mouse_event)
+{
+    qDebug() << "Hola!";
+    m_plotter_manager.graphDoubleClicked(plottable, dataIndex, p_mouse_event);
 }

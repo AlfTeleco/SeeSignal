@@ -81,7 +81,7 @@ private:
 private slots:
 
     /* Plot methods */
-    void                                graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
+    void                                graphClicked(QCPAbstractPlottable *plottable, int dataIndex);    
 
 public slots:
 
@@ -93,6 +93,10 @@ public slots:
     void                                update_mouse_cursors(QMouseEvent *event, int plot_id);
     void                                update_mouse_coords(QMouseEvent *event, int plot_id);
     void                                cast_signal_analysis_results( int plot_id, int signal_id );
+
+    bool                                set_axis_label( QCPAxis *p_axis );
+    void                                graphDoubleClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *p_mouse_event);
+
 
 signals:
 

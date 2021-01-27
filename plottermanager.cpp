@@ -363,6 +363,26 @@ void PlotterManager::initialize_mouse_cursors(QCustomPlot *plot)
     y_line_cross->position("start")->setCoords( QPointF( 0.0, 0.0 ) );
     y_line_cross->position("end")->setCoords( QPointF( 0.0, 0.0 ) );
     y_line_cross->setPen( t_pen );
+
+    /*Add mouse coordinates*/
+    QCPItemText *mouse_coordinates = new QCPItemText( plot );
+    mouse_coordinates->setLayer("MouseCursors");
+    mouse_coordinates->setObjectName("mouse_cursor_label");
+    mouse_coordinates->position->setType( QCPItemPosition::ptPlotCoords );
+    mouse_coordinates->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
+    mouse_coordinates->setColor( Qt::black );
+    mouse_coordinates->setText( "( 0.0 , 0.0 )" );
+    mouse_coordinates->setFont( QFont( plot->font().family(), 10) );
+    mouse_coordinates->setSelectable( false );
+
+    QFontMetrics *fontMetrics = new QFontMetrics( mouse_coordinates->font() );
+    int pixels_length = fontMetrics->width( mouse_coordinates->text() );
+    QPointF label_position = plot->axisRect()->bottomRight();
+    label_position.setX( label_position.x() - pixels_length );
+    label_position.setY( label_position.y() - fontMetrics->height() );
+    mouse_coordinates->position->setCoords(label_position ); // move 10 pixels to the top from bracket center anchor
+
+
 }
 
 void PlotterManager::initialize_mouse_coords(QCustomPlot *plot)
@@ -452,15 +472,14 @@ bool PlotterManager::remove_label_at_plot( const int &p_plot_id, QCPAbstractItem
     {
         initialize_mouse_coords( plot );
     }
-    const QCPItemText *t_may_be_selected_label = 0;
 
+    QCPItemText *t_may_be_selected_label = 0;
     for( int l_var0 = 0; l_var0 < plot->layer( "Labels" )->children().size(); l_var0++ )
     {
         t_may_be_selected_label = dynamic_cast < QCPItemText* > ( plot->layer( "Labels" )->children().at( l_var0 ) );
         if( t_may_be_selected_label ==  dynamic_cast < QCPItemText* >( p_item ) )
         {
-             plot->layer( "Labels" )->children().at( l_var0 )->deleteLater();
-             p_item->setVisible(false);
+            plot->removeItem( t_may_be_selected_label );
         }
     }
 
@@ -606,7 +625,7 @@ void PlotterManager::update_mouse_cursors(QMouseEvent *event, int plot_id)
     //Find the "y" value inmediatly smaller than the mouse cursor
     double t_mouse_y_position = plot->yAxis->pixelToCoord( event->pos().y() );
     int t_nearest_graph_index = 0;
-    double t_distance_to_graph = t_distance_to_graph = abs(t_mouse_y_position - t_graphs_at_plot.first()->data()->at(t_x_value_at_graph)->value );
+    double t_distance_to_graph = abs(t_mouse_y_position - t_graphs_at_plot.first()->data()->at(t_x_value_at_graph)->value );
 
     for( int l_var0 = 0; l_var0 < t_graphs_at_plot.size(); l_var0++ )
     {
@@ -615,6 +634,7 @@ void PlotterManager::update_mouse_cursors(QMouseEvent *event, int plot_id)
             t_nearest_graph_index = l_var0;
             t_distance_to_graph = abs(t_mouse_y_position - t_graphs_at_plot.at(l_var0)->data()->at(t_x_value_at_graph)->value );
         }
+
     }
 
     QPointF mousePosition( plot->xAxis->pixelToCoord( event->pos().x() ), plot->yAxis->pixelToCoord( event->pos().y() ) );
@@ -643,6 +663,14 @@ void PlotterManager::update_mouse_cursors(QMouseEvent *event, int plot_id)
     t_lineX_cross->position("end")->setCoords( xlineCrossEnd );
     t_lineY_cross->position("start")->setCoords( ylineCrossStart );
     t_lineY_cross->position("end")->setCoords( ylineCrossEnd );
+
+    QCPItemText *mouse_coordinates = dynamic_cast < QCPItemText* > ( plot->layer( "MouseCursors" )->children().at( 4 ) );
+    mouse_coordinates->setText( "( " + QString::number( mousePosition.x() ) + " , " +  QString::number( mousePosition.y() ) + " )");
+    QPointF label_position;
+    label_position.setX( mousePosition.x() );
+    label_position.setY( mousePosition.y() );
+    mouse_coordinates->position->setCoords(label_position ); // move 10 pixels to the top from bracket center anchor
+
 }
 
 void PlotterManager::update_mouse_coords(QMouseEvent *event, int plot_id)
@@ -679,5 +707,27 @@ void PlotterManager::cast_signal_analysis_results(int plot_id, int signal_id)
     float t_first_harmonic = m_signal_db->get_signal( signal_id )->get_signal_first_harmonic();
 
     emit update_signal_analysis_results( t_average, t_first_harmonic, t_std_deviation );
+
+}
+
+bool PlotterManager::set_axis_label(QCPAxis *p_axis)
+{
+    bool ok;
+    QString text = QInputDialog::getText( new QWidget, tr("Set Axis label"),
+                                        tr("Axis name"), QLineEdit::Normal,
+                                        "Time", &ok);
+    if (ok && !text.isEmpty())
+    {
+       p_axis->setLabel( text );
+    }
+
+    return (ok);
+}
+
+void PlotterManager::graphDoubleClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *p_mouse_event)
+{
+    QCPGraph *t_graph = dynamic_cast< QCPGraph* >(plottable);
+    QPen t_pen( QColorDialog::getColor("New colour for signal"));
+    m_signal_db->set_signal_pen( t_graph->name().toInt(), t_pen );
 
 }
