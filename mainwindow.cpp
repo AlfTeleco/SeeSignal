@@ -147,6 +147,25 @@ void MainWindow::open_files(QStringList files_names)
     }
 }
 
+void MainWindow::update_table_widget_signal(int signal_id)
+{
+    if( signal_id < 0 )
+    {
+        return;
+    }
+
+    QTableWidget *t_visible_table = get_visible_tableWidget();
+
+    for( int l_var0 = 0; l_var0 < t_visible_table->rowCount(); l_var0++ )
+    {
+        if( t_visible_table->item( l_var0, 0 )->text() == QString::number( signal_id ) )
+        {
+            QPen t_pen( m_signalDb->get_signal_pen( signal_id ) );
+            t_visible_table->item( l_var0, 0 )->setBackgroundColor( t_pen.color() );
+        }
+    }
+}
+
 void MainWindow::on_actionopen_plot_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -716,6 +735,10 @@ void MainWindow::change_axis_label(QCPAxis *p_axis)
 
 void MainWindow::graphDoubleClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *p_mouse_event)
 {
-    qDebug() << "Hola!";
+    QCPGraph *t_graph = dynamic_cast< QCPGraph* >( plottable );
     m_plotter_manager.graphDoubleClicked(plottable, dataIndex, p_mouse_event);
+    if( t_graph != nullptr )
+    {
+        update_table_widget_signal( t_graph->name().toInt() );
+    }
 }

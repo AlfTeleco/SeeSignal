@@ -59,8 +59,8 @@ private:
      * Also, as there will be several signals drawn at the same plot, there will be several elements with the same plot_id and different signal_id.
      */
     //QHash< int, QWidget > m_plot_indexes;
-    QMultiHash< int, QCustomPlot* >     m_plot_widget_2_plot_id;
-    QMultiHash< int, int>               m_plot_id_2_signal_id;
+    QMultiHash< int, QCustomPlot* >     m_plot_widget_2_plot_id;    // Hash bonding < widget, int >
+    QMultiHash< int, int>               m_plot_id_2_signal_id;      // Hash bonding < int(plot id), int(signal id) >
     SignalDB                            *m_signal_db = SignalDB::instance();
     QList< int >                        m_plot_indexes;
 
@@ -90,6 +90,7 @@ public slots:
     bool                                remove_graph_from_plot( int signal_id );
     bool                                remove_signal_from_dbs( int signal_id );
     void                                update_signal_names( int plot_id );
+    void                                update_signal_colour(int plot_id , const QColor &p_colour);
     void                                update_mouse_cursors(QMouseEvent *event, int plot_id);
     void                                update_mouse_coords(QMouseEvent *event, int plot_id);
     void                                cast_signal_analysis_results( int plot_id, int signal_id );

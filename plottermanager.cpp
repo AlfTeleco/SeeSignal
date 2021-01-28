@@ -132,6 +132,13 @@ void PlotterManager::update_signal_names( int plot_id )
     }
 }
 
+void PlotterManager::update_signal_colour(int signal_id, const QColor &p_colour )
+{
+        QPen t_pen( p_colour );
+        m_signal_db->set_signal_pen( signal_id, t_pen );
+
+}
+
 int PlotterManager::new_plot_index()
 {
     m_plot_indexes.append( m_plot_indexes.size() );
@@ -727,7 +734,8 @@ bool PlotterManager::set_axis_label(QCPAxis *p_axis)
 void PlotterManager::graphDoubleClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent *p_mouse_event)
 {
     QCPGraph *t_graph = dynamic_cast< QCPGraph* >(plottable);
-    QPen t_pen( QColorDialog::getColor("New colour for signal"));
-    m_signal_db->set_signal_pen( t_graph->name().toInt(), t_pen );
-
+    int signal_id = t_graph->name().toInt();
+    update_signal_colour( signal_id, QColorDialog::getColor("New colour for signal") );
+    t_graph->setPen( m_signal_db->get_signal_pen( signal_id) );
+    update_signal_names(m_plot_id_2_signal_id.key(signal_id));
 }

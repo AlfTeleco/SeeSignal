@@ -34,6 +34,7 @@ public slots:
     void                open_file( const QString &file_name );
     void                open_file( const QString &file_name, int plot_id );
     void                open_files( QStringList files_names );
+    void                update_table_widget_signal( int signal_id );
 
 private slots:
     void                on_actionopen_plot_triggered();
