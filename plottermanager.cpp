@@ -300,6 +300,45 @@ void PlotterManager::update_common_plot_properties(const PlotProperties &plot_pr
     }
 }
 
+QCPGraph *PlotterManager::get_nearest_graph_to_mouse_position(const int &p_plot_id, QMouseEvent *p_event)
+{
+    QCustomPlot *t_plot = m_plot_widget_2_plot_id.value( p_plot_id );
+    /*Get every graph on the plot*/
+    QList< QCPGraph* > t_graphs_at_plot;
+    for( int l_var0 = 0; l_var0 < t_plot->graphCount(); l_var0++ )
+    {
+        t_graphs_at_plot.append( t_plot->graph(l_var0) );
+    }
+
+    /*Locate the mouse position inbetween graph values*/
+    double t_x_mouse_position = t_plot->xAxis->pixelToCoord( p_event->pos().x() );
+    int t_x_value_at_graph = 0;
+
+    for( int l_var0 = 0; l_var0 < t_graphs_at_plot.at(0)->dataCount(); l_var0++ )
+    {
+        if( t_graphs_at_plot.at(0)->data()->at( l_var0 )->key < t_x_mouse_position )
+        {
+            t_x_value_at_graph = l_var0;
+        }
+    }
+
+    //Find the "y" value inmediatly smaller than the mouse cursor
+    double t_mouse_y_position = t_plot->yAxis->pixelToCoord( p_event->pos().y() );
+    int t_nearest_graph_index = 0;
+    double t_distance_to_graph = abs(t_mouse_y_position - t_graphs_at_plot.first()->data()->at(t_x_value_at_graph)->value );
+
+    for( int l_var0 = 0; l_var0 < t_graphs_at_plot.size(); l_var0++ )
+    {
+        if( abs(t_mouse_y_position - t_graphs_at_plot.at(l_var0)->data()->at(t_x_value_at_graph)->value ) < t_distance_to_graph )
+        {
+            t_nearest_graph_index = l_var0;
+            t_distance_to_graph = abs(t_mouse_y_position - t_graphs_at_plot.at(l_var0)->data()->at(t_x_value_at_graph)->value );
+        }
+    }
+
+    return ( t_plot->graph(t_nearest_graph_index ) );
+}
+
 void PlotterManager::replot_all()
 {
     QHash< int, QCustomPlot* >::iterator t_has_iterator =  m_plot_widget_2_plot_id.begin();
@@ -437,33 +476,59 @@ void PlotterManager::graphClicked(QCPAbstractPlottable *plottable, int dataIndex
 bool PlotterManager::add_label_at_plot( const int &p_plot_id, QMouseEvent *p_event )
 {
 
-    QCustomPlot *plot = m_plot_widget_2_plot_id.value( p_plot_id );
+    QCustomPlot *t_plot = m_plot_widget_2_plot_id.value( p_plot_id );
 
-    plot->layer("Labels")->setVisible(true);
+    t_plot->layer("Labels")->setVisible(true);
 
-    if( plot->layer( "MouseCoordinates" )->children().isEmpty() )
+    if( t_plot->layer( "MouseCoordinates" )->children().isEmpty() )
     {
-        initialize_mouse_coords( plot );
+        initialize_mouse_coords( t_plot );
     }
 
-    QPointF t_label_position( plot->xAxis->pixelToCoord( p_event->pos().x() ), plot->yAxis->pixelToCoord( p_event->pos().y() ) );
-
-    QCPItemText *mouse_coordinates = dynamic_cast < QCPItemText* > ( plot->layer( "MouseCoordinates" )->children().at( 0 ) );
+    if( t_plot->graphCount() < 1 ) return ( false );
 
     /*Add label*/
-    QCPItemText *t_new_label = new QCPItemText( plot );
-    QString t_label_name ( mouse_coordinates->text() );
+    QCPItemText *t_new_label = new QCPItemText( t_plot );
     t_new_label->setLayer("Labels");
     t_new_label->position->setType( QCPItemPosition::ptPlotCoords );
     t_new_label->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom );
     t_new_label->setColor( Qt::red );
     t_new_label->setSelectable( false );
-    t_new_label->setText( t_label_name );
-    t_new_label->setFont( QFont( plot->font().family(), 10) );
-    t_new_label->setObjectName( t_label_name );
-    t_new_label->position->setCoords( t_label_position ); // move 10 pixels to the top from bracket center anchor
+    t_new_label->setFont( QFont( t_plot->font().family(), 10) );
 
-    plot->replot();
+    /*Add circle at specific point*/
+    QCPItemTracer *t_new_tracer = new QCPItemTracer( t_plot );
+    t_new_tracer->setLayer("Labels");
+    t_new_tracer->setStyle( QCPItemTracer::tsCircle );
+    t_new_tracer->setSelectable( false );
+
+    auto t_nearest_graph( get_nearest_graph_to_mouse_position(p_plot_id,p_event ));
+
+    double t_x_mouse_position = t_plot->xAxis->pixelToCoord( p_event->pos().x() );
+    int t_x_value_at_graph = 0;
+
+    for( int l_var0 = 0; l_var0 < t_nearest_graph->dataCount(); l_var0++ )
+    {
+        if( t_nearest_graph->data()->at( l_var0 )->key < t_x_mouse_position )
+        {
+            t_x_value_at_graph = l_var0;
+        }
+    }
+
+    t_new_tracer->setGraph( t_nearest_graph );
+    t_new_tracer->setGraphKey(t_x_value_at_graph);
+    t_new_tracer->updatePosition();
+    QPointF t_label_position( t_plot->xAxis->pixelToCoord( t_new_tracer->position->pixelPosition().x() ),
+                              t_plot->yAxis->pixelToCoord( t_new_tracer->position->pixelPosition().y() ) );
+
+
+    QString t_label_name( "( "+ QString::number(t_label_position.x())+", "+QString::number(t_label_position.y())+" )" );
+    t_new_label->setText( t_label_name );
+    t_new_label->setObjectName( t_label_name );
+    t_new_tracer->setObjectName( t_label_name+"_dot" );
+    t_new_label->position->setCoords( t_new_tracer->position->coords() ); // move 10 pixels to the top from bracket center anchor
+
+    t_plot->replot();
 
     return ( true );
 }
@@ -480,14 +545,15 @@ bool PlotterManager::remove_label_at_plot( const int &p_plot_id, QCPAbstractItem
         initialize_mouse_coords( plot );
     }
 
-    QCPItemText *t_may_be_selected_label = 0;
-    for( int l_var0 = 0; l_var0 < plot->layer( "Labels" )->children().size(); l_var0++ )
+    QCPItemTracer *t_may_be_selected_ellipse = 0;
+    t_may_be_selected_ellipse = plot->findChild<QCPItemTracer*>(p_item->objectName()+"_dot", Qt::FindChildrenRecursively);
+    if( p_item != nullptr )
     {
-        t_may_be_selected_label = dynamic_cast < QCPItemText* > ( plot->layer( "Labels" )->children().at( l_var0 ) );
-        if( t_may_be_selected_label ==  dynamic_cast < QCPItemText* >( p_item ) )
-        {
-            plot->removeItem( t_may_be_selected_label );
-        }
+        plot->removeItem( p_item );
+    }
+    if( t_may_be_selected_ellipse != nullptr )
+    {
+        plot->removeItem(t_may_be_selected_ellipse);
     }
 
     plot->replot();
@@ -602,7 +668,8 @@ void PlotterManager::update_mouse_cursors(QMouseEvent *event, int plot_id)
         plot->layer("MouseCursors")->setVisible(false);
         plot->replot();
         return;
-    }else if( !plot->layer("MouseCursors")->visible() )
+    }
+    else if( !plot->layer("MouseCursors")->visible() )
     {
          plot->layer("MouseCursors")->setVisible(true);
     }
@@ -737,7 +804,11 @@ void PlotterManager::graphDoubleClicked(QCPAbstractPlottable *plottable, int dat
 {
     QCPGraph *t_graph = dynamic_cast< QCPGraph* >(plottable);
     int signal_id = t_graph->name().toInt();
-    update_signal_colour( signal_id, QColorDialog::getColor("New colour for signal") );
-    t_graph->setPen( m_signal_db->get_signal_pen( signal_id) );
-    update_signal_names(m_plot_id_2_signal_id.key(signal_id));
+    QColor t_color( QColorDialog::getColor("New colour for signal") );
+    if( t_color.isValid() )
+    {
+        update_signal_colour( signal_id, t_color );
+        t_graph->setPen( m_signal_db->get_signal_pen( signal_id) );
+        update_signal_names(m_plot_id_2_signal_id.key(signal_id));
+    }
 }

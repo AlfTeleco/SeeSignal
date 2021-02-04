@@ -52,6 +52,7 @@ public:
     bool            update_data_signal_at_plot( int signal_id, QPair<QVector<double>, QVector<double> > data);
     bool            update_data_signal_at_plot(int signal_id, const QPolygonF &new_signal_data);
     void            update_common_plot_properties( const PlotProperties &plot_property, bool enabled );
+    QCPGraph        *get_nearest_graph_to_mouse_position( const int &p_plot_id, QMouseEvent *p_event );
     void            replot_all();
 
 private:
