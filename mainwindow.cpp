@@ -608,6 +608,10 @@ bool MainWindow::event(QEvent *event)
         }
 
     }
+    else if ( event->type() == QEvent::KeyPress && dynamic_cast<QKeyEvent*>(event)->key() == Qt::Key_F5 )
+    {
+        on_actionreset_zoom_triggered();
+    }
     else if ( event->type() == QEvent::Resize )
     {
         if ( !get_visible_plots().isEmpty() )
