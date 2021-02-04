@@ -547,11 +547,11 @@ bool PlotterManager::remove_label_at_plot( const int &p_plot_id, QCPAbstractItem
 
     QCPItemTracer *t_may_be_selected_ellipse = 0;
     t_may_be_selected_ellipse = plot->findChild<QCPItemTracer*>(p_item->objectName()+"_dot", Qt::FindChildrenRecursively);
-    if( p_item != nullptr )
+    if( p_item != nullptr && p_item->layer()->name() == "Labels" )
     {
         plot->removeItem( p_item );
     }
-    if( t_may_be_selected_ellipse != nullptr )
+    if( t_may_be_selected_ellipse != nullptr && t_may_be_selected_ellipse->layer()->name() == "Labels" )
     {
         plot->removeItem(t_may_be_selected_ellipse);
     }
