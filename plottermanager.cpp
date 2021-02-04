@@ -711,7 +711,9 @@ void PlotterManager::cast_signal_analysis_results(int plot_id, int signal_id)
     }
     float t_average = m_signal_db->get_signal( signal_id )->get_signal_average();
     float t_std_deviation = m_signal_db->get_signal( signal_id )->get_signal_std_deviation();
-    float t_first_harmonic = m_signal_db->get_signal( signal_id )->get_signal_first_harmonic();
+    QPolygonF t_first_harmonic = m_operations_manager.perform_fft(signal_id);// = m_signal_db->get_signal( signal_id )->get_signal_first_harmonic();
+
+    qDebug() << t_first_harmonic;
 
     emit update_signal_analysis_results( t_average, t_first_harmonic, t_std_deviation );
 

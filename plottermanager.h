@@ -6,6 +6,7 @@
 #include <math.h>
 #include "signaldb.h"
 #include "qcustomplot.h"
+#include "operationsmanager.h"
 
 /* Layers at plots:
  * MouseCursors
@@ -63,6 +64,7 @@ private:
     QMultiHash< int, int>               m_plot_id_2_signal_id;      // Hash bonding < int(plot id), int(signal id) >
     SignalDB                            *m_signal_db = SignalDB::instance();
     QList< int >                        m_plot_indexes;
+    OperationsManager                   m_operations_manager;
 
     QStringList                         m_default_plot_layers =
                                         { "MouseCursors",
@@ -101,7 +103,7 @@ public slots:
 
 signals:
 
-    void                                update_signal_analysis_results( float signal_average, float first_harmonic, float std_deviation );
+    void                                update_signal_analysis_results( float signal_average, QPolygonF spectrum, float std_deviation );
 
 };
 

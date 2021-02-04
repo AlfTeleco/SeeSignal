@@ -20,6 +20,7 @@ DEFINES +=  \
 SOURCES += \
     fileformatterdialog.cpp \
     fileparser.cpp \
+    jfft.cpp \
     main.cpp \
     mainwindow.cpp \
     operationsmanager.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 HEADERS += \
     fileformatterdialog.h \
     fileparser.h \
+    jfft.h \
     mainwindow.h \
     operationsmanager.h \
     plottermanager.h \

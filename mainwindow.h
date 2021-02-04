@@ -72,7 +72,7 @@ private slots:
 
     void                on_actionauto_signal_analysis_toggled(bool arg1);
 
-    void                update_signal_anylsis_parameters( float signal_average, float first_harmonic, float std_deviation );
+    void                update_signal_anylsis_parameters(float signal_average, QPolygonF spectrum, float std_deviation );
 
     void                on_actionsave_plot_triggered();
 

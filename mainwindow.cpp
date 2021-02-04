@@ -10,6 +10,12 @@ MainWindow::MainWindow(QWidget *parent)
     create_new_tab_plot( QString::number( ui->tabWidget->count() ) );
     initialize_file_formatter_dialog();
     ui->tool_signal_analysis->setVisible(false);
+    QCustomPlot *t_plot = new QCustomPlot(ui->spectrum_plot);
+    QHBoxLayout *horizontal_layout = new QHBoxLayout;
+    horizontal_layout->addWidget(t_plot);
+    t_plot->setObjectName("spectrum_plot");
+    t_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
+    ui->spectrum_plot->setLayout( horizontal_layout );
 //    connect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
     ui->signalCalculator->setVisible(false);
     ui->op1_edit->installEventFilter( this );
@@ -494,21 +500,42 @@ void MainWindow::on_actionauto_signal_analysis_toggled(bool arg1)
 {
     if( arg1 )
     {
-        connect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
+        connect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, QPolygonF, float) ), this, SLOT( update_signal_anylsis_parameters(float, QPolygonF, float)));
     }
     else
     {
-        disconnect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, float, float) ), this, SLOT( update_signal_anylsis_parameters(float, float, float)));
+        disconnect( &m_plotter_manager, SIGNAL( update_signal_analysis_results(float, QPolygonF, float) ), this, SLOT( update_signal_anylsis_parameters(float, QPolygonF, float)));
     }
     ui->tool_signal_analysis->setVisible( arg1 );
     ui->tool_signal_analysis->setEnabled( arg1 );
 }
 
-void MainWindow::update_signal_anylsis_parameters(float signal_average, float first_harmonic, float std_deviation)
+void MainWindow::update_signal_anylsis_parameters(float signal_average, QPolygonF spectrum, float std_deviation)
 {
     ui->signal_average_label_value->setText( QString::number( signal_average ) );
     ui->signal_std_label_value->setText( QString::number( std_deviation ) );
-    ui->signal_first_harmonic_label_value->setText( QString::number( first_harmonic ) );
+    if( ui->spectrum_plot->findChild<QCustomPlot*>("spectrum_plot", Qt::FindChildrenRecursively)!= nullptr )
+    {
+        QCustomPlot *t_plot = ui->spectrum_plot->findChild<QCustomPlot*>("spectrum_plot");
+        t_plot->clearGraphs();
+        int t_size = spectrum.size();
+        QVector<double> x(t_size), y(t_size);
+
+        for( int l_var0 = 0; l_var0 < t_size; l_var0++ )
+        {
+            x[l_var0] = spectrum.at(l_var0).x();
+            y[l_var0] = spectrum.at(l_var0).y();
+        }
+
+        QPair<QVector<double>,QVector<double> > t_graph;
+        t_graph.first = x;
+        t_graph.second = y;
+        QCPGraph *new_graph = t_plot->addGraph();
+        new_graph->addData( t_graph.first, t_graph.second);
+        new_graph->setName( "spectrum signal" );
+        t_plot->rescaleAxes();
+        t_plot->replot();
+    }
 }
 
 void MainWindow::on_actionsave_plot_triggered()

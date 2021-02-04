@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QPolygonF>
 #include "signaldb.h"
+#include "jfft.h"
+
 
 class OperationsManager : public QObject
 {
@@ -15,6 +17,7 @@ public:
     QPolygonF perform_subtraction( int p_first_signal, int p_second_signal );
     QPolygonF perform_division( int p_first_signal, int p_second_signal );
     QPolygonF perform_mutiplication( int p_first_signal, int p_second_signal );
+    QPolygonF perform_fft( int p_signal );
 
 private:
 
